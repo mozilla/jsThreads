@@ -85,13 +85,9 @@ var Thread;
 	Thread.isRunning = [];
 
 	function showWorking(){
-		var l = $(".loading");
-		l.show();
 	}//function
 
 	function hideWorking(){
-		var l = $(".loading");
-		l.hide();
 	}//function
 
 
