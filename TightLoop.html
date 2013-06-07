@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+		"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<title>Many JSON Calls</title>
+	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="application/javascript"             src="http://fgnass.github.io/spin.js/dist/spin.js"></script>
+	<script type="application/javascript;version=1.7" src="lib/flickr.js" ></script>
+	<script type="application/javascript;version=1.7" src="lib/spinner.js" ></script>
+	<script type="application/javascript;version=1.7" src="js/thread.js" ></script>
+	<script type="application/javascript;version=1.7" src="js/examples/JSONP.js" ></script>
+
+</head>
+<body>
+	<h2>Count Fast Without Blocking</h2>
+	<div id="message"></div>
+
+	<div>
+	Spinner to show no real blocking: <div id="spinner"></div>
+	</div>
+
+	<button onclick="stop=true;">Stop Counter</button>
+
+	<script type="application/javascript;version=1.7">
+		var stop=false;
+
+		var c=0;
+		var t = Thread.run(function(){
+			while(!stop){
+				yield (Thread.yield());		//PUT THIS IN YOUR BIG LOOPS TO SHARE THE MAIN THREAD
+				$("#message").html("Current count is "+c);
+				c++;
+			}//while
+		});
+
+
+	</script>
+</body>
+</html>
