@@ -23,18 +23,22 @@ deadlocking, or corrupted state you have from real threading.
 
 BASIC FEATURES
 --------------
+<dl>
 
-Create a New Thread
--------------------
+
+<dt>Create a New Thread</dt>
+<dd>
 
 	Thread.run(function(){
 		//DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
+</dd>
 
 
-Synchronous Calling Style:
---------------------------
+<dt>Synchronous Calling Style</dt>
+<dd>
+
 	Thread.run(function(){
 
 		var a = yield (callServerForData());
@@ -48,32 +52,33 @@ Synchronous Calling Style:
 		var c = yield (yetAnotherCall(b));
 
 	});
+</dd>
 
-Wait for Thread to Complete:
-----------------------------
-
+<dt>Wait for Thread to Complete</dt>
+<dd>
 	var t=Thread.run(function(){...});
 
 	yield (Thread.join(t));
-
-Sleep:
-------
-
+</dd>
+<dt>Sleep</dt>
+<dd>
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
+</dd>
 
-Cooperate:
-----------
+<dt>Cooperate</dt>
+<dd>
+	yield (Thread.yield());		//LET OTHER THREADS RUN
+</dd>
 
-	yield (Thread.yield());
 
-
-Stop Thread Early:
-------------------
+<dt>Stop Thread Early</dt>
+<dd>
 
 	var t=Thread.run(function(){...});
 	Thread.kill(t);
+</dd>
 
-
+</dl>
 
 
 
