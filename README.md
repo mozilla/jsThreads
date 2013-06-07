@@ -23,21 +23,16 @@ deadlocking, or corrupted state you have from real threading.
 
 BASIC FEATURES
 --------------
-<dl>
 
-
-<dt>Create a New Thread</dt>
-<dd>
+**Create a New Thread**
 
 	Thread.run(function(){
 		//DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
-</dd>
 
 
-<dt>Synchronous Calling Style</dt>
-<dd>
+**Synchronous Calling Style**
 
 	Thread.run(function(){
 
@@ -52,82 +47,75 @@ BASIC FEATURES
 		var c = yield (yetAnotherCall(b));
 
 	});
-</dd>
 
-<dt>Wait for Thread to Complete</dt>
-<dd>
+**Wait for Thread to Complete**
+
 	var t=Thread.run(function(){...});
 
 	yield (Thread.join(t));
-</dd>
-<dt>Sleep</dt>
-<dd>
+
+**Sleep**
+
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
-</dd>
 
-<dt>Cooperate</dt>
-<dd>
-	yield (Thread.yield());		//LET OTHER THREADS RUN
-</dd>
+**Cooperate**
+
+	yield (Thread.yield());
 
 
-<dt>Stop Thread Early</dt>
-<dd>
+**Stop Thread Early**
 
 	var t=Thread.run(function(){...});
 	Thread.kill(t);
-</dd>
-
-</dl>
 
 
+DRAWBACKS
+---------
 
-
-
-DRAWBACKS:
-==========
-
-Here are some of complicatoins to lok out for
+Here are some of complications to look out for
 
 
 
-MUST BE A GENERATOR
+**MUST BE A GENERATOR**
 
 A common mistake is to not include a "yield" in the function.  This will make
 it appear as if nothing happens
 
-BAD:
-	Thread.run(function(){
-		$("#message").html("Hi there");
-	});
+  - **BAD:**
 
-GOOD:
-	Thread.run(function(){
-		$("#message").html("Hi there");
-		yield (null)
-	});
+        Thread.run(function(){
+            $("#message").html("Hi there");
+        });
 
+  
+  - **GOOD:**
+   
+        Thread.run(function(){
+            $("#message").html("Hi there");
+            yield (null)
+        });
 
-
-
-ACCIDENTALLY CALLING GENERATORS DIRECTLY
+**ACCIDENTALLY CALLING GENERATORS DIRECTLY**
 
 With so many generators in your code, you may find yourself calling them like
 normal functions.  This is bad.  These 'normal' functions return generator objects,
 and do not fully execute on first call.   If you find your function is not
 executing, this is probably the cause.
 
-BAD:
-	doSomeSetup();  //YOU CAN'T TELL, BUT THIS IS A GENERATOR.  IT WILL SEEM TO DO NOTHING
+ - **BAD:**
 
-GOOD:
-	yield (doSomeSetup());  //NOW IT WILL WORK
+        doSomeSetup();  //YOU CAN'T TELL, BUT THIS IS A GENERATOR.  IT WILL SEEM TO DO NOTHING
 
 
+ - **GOOD:**
 
-HARD TO DEBUG
+        yield (doSomeSetup());  //NOW IT WILL WORK
 
-Because Thread calls all generators directly, it can be impossible to see the
+
+
+**HARD TO DEBUG**
+
+Because ```Thread```` calls all generators directly, it can be impossible to see the
 stack trace you expect.
 
 Avoid this problem by keeping your threaded code from making deep threaded calls.
@@ -135,7 +123,8 @@ If you need deep logic, it is better implemented with regular functions, called 
 the threaded code.
 
 
-SCREWS WITH DEBUGGER
+
+**IMPOSSIBLE STATES WITH DEBUGGER**
 
 When your debugger is on, and you have your code paused, AND there are pending
 responses, all bets are off.  The pending request will trigger the javascript
@@ -146,35 +135,36 @@ achieve "impossible" states when you are debugging.
 
 
 
-CAN NOT USE JS FUNCTORS
+**CAN NOT USE JS FUNCTORS**
 
 You must pass a generator to Thread.run().  Javascript's functor style can prevent
 elegant threaded code:
 
-BAD:
-----
-	Thread.run(function(){
-		$.each(array, function(item){
-			yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
-		});
-	});
+  - **BAD:**
 
-GOOD:
------
-	Thread.run(function(){
-		for(var i=0;i<array.length;i++){
-			yield (callBackToServer())
-		};
-	});
+        Thread.run(function(){
+            $.each(array, function(item){
+                yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
+            });
+        });
 
-BETTER? (it depends):
----------------------
-	$.each(array, function(item){
-		Thread.run(function(){
-			yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
-		});
-	});
+  - **GOOD:**
 
+        Thread.run(function(){
+            for(var i=0;i<array.length;i++){
+                yield (callBackToServer())
+            };
+        });
 
+  - **BETTER? (it depends**)
+
+        $.each(array, function(item){
+            Thread.run(function(){
+                yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
+            });
+        });
 
 
+
+
+    
