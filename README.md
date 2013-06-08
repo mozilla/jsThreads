@@ -50,9 +50,9 @@ BASIC FEATURES
 
 **Wait for Thread to Complete**
 
-	var t=Thread.run(function(){...});
+	var t=Thread.run(function(){...});	//MAKE THREAD
 
-	yield (Thread.join(t));
+	yield (Thread.join(t));				//WAIT TO FINISH
 
 **Sleep**
 
@@ -60,13 +60,13 @@ BASIC FEATURES
 
 **Cooperate**
 
-	yield (Thread.yield());
+	yield (Thread.yield());		//LET OTHER THREADS RUN
 
 
 **Stop Thread Early**
 
-	var t=Thread.run(function(){...});
-	Thread.kill(t);
+	var t=Thread.run(function(){...});	//MAKE THREAD
+	Thread.kill(t);						//KILL IT
 
 
 DRAWBACKS
@@ -75,10 +75,15 @@ DRAWBACKS
 Here are some of complications to look out for
 
 
+**ONLY WORKS IN FIREFOX**
+
+Generators have been around for a while, but other browsers (and js engines) do
+not seem to implement them.  I hear Chrome has generators coming soon.
+
 
 **MUST BE A GENERATOR**
 
-A common mistake is to not include a "yield" in the function.  This will make
+A common mistake is to forget a "yield" in the function.  This will make
 it appear as if nothing happens
 
   - **BAD:**
@@ -115,7 +120,7 @@ executing, this is probably the cause.
 
 **HARD TO DEBUG**
 
-Because ```Thread```` calls all generators directly, it can be impossible to see the
+Because ```Thread``` calls all generators directly, it can be impossible to see the
 stack trace you expect.
 
 Avoid this problem by keeping your threaded code from making deep threaded calls.
@@ -127,7 +132,7 @@ the threaded code.
 **IMPOSSIBLE STATES WITH DEBUGGER**
 
 When your debugger is on, and you have your code paused, AND there are pending
-responses, all bets are off.  The pending request will trigger the javascript
+responses, all bets are off.  The pending response will trigger the javascript
 engine to run despite the debugger, and mess with your program state.
 
 This happens with any javascript program, but just be aware your program can be
@@ -137,7 +142,7 @@ achieve "impossible" states when you are debugging.
 
 **CAN NOT USE JS FUNCTORS**
 
-You must pass a generator to Thread.run().  Javascript's functor style can prevent
+You must pass a generator to ```Thread.run()```.  Javascript's functor style can prevent
 elegant threaded code:
 
   - **BAD:**
@@ -152,7 +157,7 @@ elegant threaded code:
 
         Thread.run(function(){
             for(var i=0;i<array.length;i++){
-                yield (callBackToServer())
+                yield (callBackToServer())	//YIELD IS PART OF PASSED FUNCTION
             };
         });
 
@@ -160,7 +165,7 @@ elegant threaded code:
 
         $.each(array, function(item){
             Thread.run(function(){
-                yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
+                yield (callBackToServer()) //YIELD IS PART OF PASSED FUNCTION
             });
         });
 
