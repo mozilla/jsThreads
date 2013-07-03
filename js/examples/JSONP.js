@@ -4,8 +4,16 @@
 // HERE IS THE DETAILED EXAMPLE SHOWING HOW TO ENCAPSULATE A CALLBACK-BASED
 // FUNCTION TO MAKE A 'SYNCHRONOUS' FUNCTION
 var getJSON=function(url){
-    var callback = yield (Thread.Resume); //ASK FOR A CALLBACK THAT CAN RESUME THE CURRENT THREAD
-    $.getJSON(url, callback);             //THIS CURRENT THREAD WILL RESUME WHEN callback IS CALLED
-    yield (Thread.Suspend);               //INDICATE THE CURRENT THREAD WILL SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
+	//ASK FOR A CALLBACK THAT CAN RESUME THE CURRENT THREAD
+    var callback = yield (Thread.Resume);
+
+	//THIS CURRENT THREAD WILL RESUME WHEN callback IS CALLED
+    var req=$.getJSON(url, callback);
+
+	//DOING THIS WILL ALLOW THE THREAD TO abort() THE REQUEST
+	Thread.currentThread.currentRequest=req;  
+
+	//INDICATE THE CURRENT THREAD WILL SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
+	yield (Thread.Suspend);
 };//method
 

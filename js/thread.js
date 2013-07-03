@@ -1,6 +1,11 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+////////////////////////////////////////////////////////////////////////////////
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+////////////////////////////////////////////////////////////////////////////////
+// Author: Kyle Lahnakoski  (kyle@lahnakoski.com)
+////////////////////////////////////////////////////////////////////////////////
+
 
 
 //INSPIRED FROM  https://github.com/airportyh/trampoline.js/blob/master/6_add_exception.html
@@ -9,8 +14,9 @@ var Thread;
 
 (function(){
 	var FIRST_BLOCK_TIME = 500;	//TIME UNTIL YIELD
-	var NEXT_BLOCK_TIME = 150;	//200ms IS THE MAXMIMUM TIME A PIECE OF CODE SHOULD HOG THE MAIN THREAD
+	var NEXT_BLOCK_TIME = 150;	//THE MAXMIMUM TIME (ms) A PIECE OF CODE SHOULD HOG THE MAIN THREAD
 	var YIELD = {"name":"yield"};  //BE COOPERATIVE, WILL PAUSEE VERY MAX_TIME_BLOCK MILLISECONDS
+	var dummy={"close":function(){}};//DUMMY GENERATOR
 
 	Thread = function(gen){
 		if (typeof(gen) == "function") gen = gen();	//MAYBE THE FUNCTION WILL CREATE A GENERATOR
@@ -84,24 +90,22 @@ var Thread;
 	Thread.currentThread = mainThread
 	Thread.isRunning = [];
 
-	function showWorking(){
-	}//function
-
-	function hideWorking(){
-	}//function
-
+	//REPLACE THESE WHEN YOU WANT SIGNALS ABOUT WORKING THREADS
+	Thread.showWorking=function(){};
+	Thread.hideWorking=function(){};
+	
 
 	Thread.prototype.start = function(){
 		Thread.isRunning.push(this);
 		this.parentThread = Thread.currentThread;
 		this.parentThread.children.push(this);
-		showWorking();
+		Thread.showWorking();
 		return this.resume(this.stack.pop());
 	};
 
 
 	function Thread_prototype_resume(retval){
-		showWorking();
+		Thread.showWorking();
 		while(this.keepRunning){
 			if (String(retval) === '[object Generator]'){
 				this.stack.push(retval);
@@ -116,17 +120,17 @@ var Thread;
 						self_.currentRequest = undefined;
 						self_.resume();
 					}, 1);
-					return Thread.Suspend;
+					return;
 				}//endif
 			} else if (retval === Thread.Suspend){
 				if (!this.keepRunning) this.kill(new Exception("thread aborted"));
 //			this.stack.push(this.gen);
-				return Thread.Suspend;
+				return;
 			} else if (retval instanceof Thread.Suspend){
 				this.currentRequest = retval.request;
 				if (!this.keepRunning) this.kill(new Exception("thread aborted"));
 //			this.stack.push(this.gen);
-				return Thread.Suspend;
+				return;
 			} else if (retval === Thread.Resume){
 				var self = this;
 				retval = function(retval){
@@ -149,7 +153,7 @@ var Thread;
 					if (retval instanceof Exception){
 						D.alert("Uncaught Error in thread: " + retval.toString());
 					}//endif
-					return retval;
+					return;
 				}//endif
 			}//endif
 
@@ -189,6 +193,28 @@ var Thread;
 	Thread.prototype.resume = Thread_prototype_resume;
 
 	Thread.prototype.kill = function(retval){
+		//HOPEFULLY cr WILl BE UNDEFINED, OR NOT, (NOT CHANGING)
+		var cr = this.currentRequest;
+		this.currentRequest = undefined;
+
+		if (cr !== undefined){
+			//SOMETIMES this.currentRequest===undefined AT THIS POINT (LOOKS LIKE REAL MUTITHREADING?!)
+			try{
+				if (cr.kill) cr.kill();
+				if (cr.abort) cr.abort();
+			} catch(e){
+				D.error("kill?", cr)
+			}
+		}//endif
+
+
+		if (this.stack.length>0){
+			this.stack.push(dummy); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
+			this.resume(new Exception("Interrupted"));
+			if (this.stack.length>0)
+				D.error("Why does this Happen?");
+			return;
+		}//endif
 		this.returnValue = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
 		this.keepRunning = false;
 
@@ -197,22 +223,9 @@ var Thread;
 		Thread.isRunning.remove(this);
 
 		if (Thread.isRunning.length == 0){
-			hideWorking();
+			Thread.hideWorking();
 		}//endif
 
-
-		//HOPEFULLY cr WILl BE UNDEFINED, OR NOT, (NOT CHANGING)
-		var cr = this.currentRequest;
-		this.currentRequest = undefined;
-
-		if (cr !== undefined){
-			//SOMETIMES this.currentRequest===undefined AT THIS POINT (LOOKS LIKE REAL MUTITHREADING?!)
-			try{
-				cr.kill();
-			} catch(e){
-				D.error("kill?", cr)
-			}
-		}//endif
 		for(var i = this.stack.length; i--;){
 			try{
 				this.stack[i].close();
@@ -224,7 +237,7 @@ var Thread;
 	};
 
 	Thread.prototype.join = function(){
-		yield (Thread.join(this));
+		return Thread.join(this);
 	};
 
 
@@ -304,3 +317,8 @@ if (Exception===undefined){
 	};
 
 }
+
+if (D===undefined){
+	D={};
+	D.error=console.error
+}//endif

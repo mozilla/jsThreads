@@ -1,7 +1,7 @@
 jsThreads
 =========
 
-Cooperative multithreading in Javascript using generators
+Cooperative "multithreading" in Javascript using generators
 
 
 MOTIVATION
