@@ -140,18 +140,12 @@ var Thread;
 					self.resume(retval);
 				};
 			} else{ //RETURNING A VALUE/OBJECT/FUNCTION TO CALLER
-//			if (this.stack.length==0 && Thread.numRunning==0){
-//				D.error("what happened here?");
-//			}//endif
 				this.stack.pop().close(); //CLOSE THE GENERATOR
 
 				if (this.stack.length == 0){
-//				if (Thread.numRunning==0)
-//					D.error("Thread already dead!");
-
 					this.kill(retval);
 					if (retval instanceof Exception){
-						D.alert("Uncaught Error in thread: " + retval.toString());
+						D.warning("Uncaught Error in thread: " + retval.toString());
 					}//endif
 					return;
 				}//endif
@@ -215,7 +209,7 @@ var Thread;
 				D.error("Why does this Happen?");
 			return;
 		}//endif
-		this.returnValue = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
+		this.threadResponse = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
 		this.keepRunning = false;
 
 
@@ -236,9 +230,6 @@ var Thread;
 		this.stack = [];
 	};
 
-	Thread.prototype.join = function(){
-		return Thread.join(this);
-	};
 
 
 	//PUT AT THE BEGINNING OF A GENERATOR TO ENSURE IT WILL ONLY BE CALLED USING yield()
@@ -260,6 +251,13 @@ var Thread;
 		yield (YIELD);
 	};
 
+
+
+	//RETURNS THREAD EXCEPTION
+	Thread.prototype.join = function(){
+		return Thread.join(this);
+	};
+
 	//WAIT FOR OTHER THREAD TO FINISH
 	Thread.join = function(otherThread){
 		if (otherThread.keepRunning){
@@ -270,7 +268,7 @@ var Thread;
 			otherThread.stack.unshift(gen);
 			yield (Thread.Suspend);
 		} else{
-			yield (otherThread.returnValue);
+			yield ({"threadResponse":otherThread.threadResponse});
 		}//endif
 	};
 
@@ -279,8 +277,13 @@ var Thread;
 	//FIRST WITH NO PARAMETERS, AS REQUIRED BY ALL GENERATORS
 	//THE SEND RUN FROM THE JOINING THREAD TO RETURN THE VALUE
 	function Thread_join_resume(resumeFunction){
-		var result = yield;
-		resumeFunction(result);
+		var result;
+		try{
+			result = yield;
+		}catch(e){
+			result = e
+		}//try
+		resumeFunction({"threadResponse":result});  //PACK TO HIDE EXCEPTION
 	}//method
 
 	//CALL THE funcTION WITH THE GIVEN PARAMETERS
@@ -320,5 +323,6 @@ if (Exception===undefined){
 
 if (D===undefined){
 	D={};
-	D.error=console.error
+	D.error=console.error;
+	D.warning=console.warn;
 }//endif

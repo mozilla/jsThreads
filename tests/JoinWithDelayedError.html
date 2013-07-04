@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+		"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="application/javascript;version=1.7" src="../lib/debug.js" ></script>
+	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
+	<script type="application/javascript;version=1.7" src="../js/examples/JSONP.js" ></script>
+</head>
+<body>
+	<script type="application/javascript;version=1.7">
+		Thread.run(function(){
+
+			var NAME="JoinWithDelayedError"
+			var a=Thread.run(function(){
+				yield (Thread.sleep(500));
+				throw new Exception("problem");
+				ERROR(NAME);
+				yield (null);
+			});
+
+			try{
+				var result=yield (a.join());
+				if (result.threadResponse instanceof Exception){
+					GOOD(NAME);
+				}else{
+					ERROR(NAME);
+				}//endif
+			}catch(e){
+				ERROR(NAME);
+			}//try
+		});
+
+	</script>
+</body>
+</html>
