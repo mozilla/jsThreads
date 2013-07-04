@@ -14,11 +14,18 @@ benefit of (local) namespace pollution.
 BENEFITS
 --------
 
+**Multiple threads of control**
+
 All the thrill of multi-threaded programming, with none of the race conditions,
 deadlocking, or corrupted state you have from real threading.
 
+**Procedural Style**
 
+Functions can be written in familiar procedural style, instead of callback style.
 
+**Threads are Objects**
+
+Thread objects allow you to monitor peer thread state and interrupt peer threads.
 
 
 BASIC FEATURES
@@ -26,7 +33,7 @@ BASIC FEATURES
 
 **Create a New Thread**
 
-	Thread.run(function(){
+    Thread.run(function(){
 		//DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
@@ -53,20 +60,34 @@ BASIC FEATURES
 	var t=Thread.run(function(){...});	//MAKE THREAD
 
 	yield (Thread.join(t));				//WAIT TO FINISH
+    
+The ```join()``` method will return a structure (```{"threadResponse":value}```)
+with the last value handled by the joinee thread.  This value is either the last
+yielded value or a thrown exception.
 
 **Sleep**
 
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
+    
+```sleep()``` can be interrupted with the ```kill()``` from another thread.
 
 **Cooperate**
 
-	yield (Thread.yield());		//LET OTHER THREADS RUN
+	yield (Thread.yield());            //LET OTHER THREADS RUN
+
+A call to ```yield()``` may, or may not suspend, depending on the amount of time
+that has passed since the last ```suspend()```
 
 
 **Stop Thread Early**
 
-	var t=Thread.run(function(){...});	//MAKE THREAD
-	Thread.kill(t);						//KILL IT
+	var t=Thread.run(function(){...});  //MAKE THREAD
+	t.kill();                           //KILL IT (Interrupt)
+
+Use this to ```abort()``` server requests or stop sleeping prematurely.  The
+killed thread will then receive a ``Thread.Interrupt``` exception.
+This exception can be caught just like any other.  It is important your code 
+properly recognizes and handles this exception to shutdown cleanly.
 
 
 DRAWBACKS
