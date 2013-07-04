@@ -18,7 +18,7 @@
 					ERROR(NAME);
 				}catch(e){
 					GOOD(NAME);
-					yield(null)
+					throw e;
 				}
 				ERROR(NAME);
 			});
@@ -29,7 +29,12 @@
 			a.kill();
 
 
-			yield (a.join());
+			var result=yield (a.join());
+			if (result.threadResponse instanceof Exception){
+				GOOD(NAME);
+			}else{
+				ERROR(NAME);
+			}//endif
 
 		});
 
