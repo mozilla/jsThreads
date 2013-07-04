@@ -30,7 +30,9 @@
 
 
 			var result=yield (a.join());
-			if (result.threadResponse instanceof Exception){
+			if (result===undefined){
+				ERROR(NAME);
+			}else if (result.threadResponse instanceof Exception){
 				GOOD(NAME);
 			}else{
 				ERROR(NAME);

@@ -11,37 +11,20 @@
 	<script type="application/javascript;version=1.7">
 		Thread.run(function(){
 
-			var done={"done":"yes"};
-			var NAME="YieldInterrupt"
-			var b=Thread.run(function(){
-				try{
-					var t=0;
-					while(Thread.currentThread.keepRunning){
-						t++;
-						yield (Thread.yield())
-					}
-					ERROR(NAME);
-					yield(null)
-				}catch(e){
-					GOOD(NAME);
-					yield(done)
-				}
-				ERROR(NAME);
-				yield(null)
+			var NAME="SimpleReturn";
+			var returnValue={"name":"return value"};
+
+			var a=new Thread(function(){
+				yield (returnValue);
 			});
+			var response=a.start();
 
-			b.kill();
-
-			var result=yield (b.join());
-
-			if (result.threadResponse!==done){
+			if (response.threadResponse!=returnValue){
 				ERROR(NAME);
 			}else{
 				GOOD(NAME);
 			}//endif
 		});
-
-
 
 	</script>
 </body>

@@ -10,10 +10,7 @@ var getJSON=function(url){
 	//THIS CURRENT THREAD WILL RESUME WHEN callback IS CALLED
     var req=$.getJSON(url, callback);
 
-	//DOING THIS WILL ALLOW THE THREAD TO abort() THE REQUEST
-	Thread.currentThread.currentRequest=req;  
-
 	//INDICATE THE CURRENT THREAD WILL SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
-	yield (Thread.Suspend);
+	yield (Thread.suspend(req));
 };//method
 
