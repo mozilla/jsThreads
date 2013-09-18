@@ -30,7 +30,7 @@ build=function(){
 	Thread = function(gen){
 		if (typeof(gen) == "function") gen = gen();	//MAYBE THE FUNCTION WILL CREATE A GENERATOR
 		if (String(gen) !== '[object Generator]'){
-			D.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
+			Log.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
 		}//endif
 		this.parentThread = Thread.currentThread;
 
@@ -63,7 +63,7 @@ build=function(){
 	//YOU CAN HAVE IT BLOCK THE MAIN TREAD FOR time MILLISECONDS
 	Thread.runSynchronously = function(gen, time){
 		if (String(gen) !== '[object Generator]'){
-			D.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
+			Log.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
 		}//endif
 
 		var thread = new Thread(gen);
@@ -72,7 +72,7 @@ build=function(){
 		}//endif
 		var result = thread.start();
 		if (result === Suspend)
-			D.error("Suspend was called while trying to synchronously run generator");
+			Log.error("Suspend was called while trying to synchronously run generator");
 		return result.threadResponse;
 	};//method
 
@@ -129,7 +129,7 @@ build=function(){
 				if (!this.keepRunning) this.kill(new Exception("thread aborted"));
 				this.stack.pop();//THE suspend() CALL MUST BE REMOVED FROM STACK
 				if (this.stack.length==0)
-					D.error("Should not happen");
+					Log.error("Should not happen");
 				return Suspend;
 			} else if (retval === Thread.Resume){
 				var self = this;
@@ -198,7 +198,7 @@ build=function(){
 					cr.abort();
 				}//endif
 			} catch(e){
-				D.error("kill?", cr)
+				Log.error("kill?", cr)
 			}//try
 		}//endif
 
@@ -207,7 +207,7 @@ build=function(){
 			this.stack.push(dummy); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
 			this.resume(Thread.Interrupted);
 			if (this.stack.length>0)
-				D.error("Why does this Happen?");
+				Log.error("Why does this Happen?");
 			return;
 		}//endif
 		this.threadResponse = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
@@ -244,7 +244,7 @@ build=function(){
 		}//endif
 
 		if (retval instanceof Exception){
-			D.alert("Uncaught Error in thread: "+nvl(this.name, "")+"\n  " + retval.toString());
+			Log.alert("Uncaught Error in thread: "+nvl(this.name, "")+"\n  " + retval.toString());
 		}//endif
 
 		return {"threadResponse":retval};
@@ -259,7 +259,7 @@ build=function(){
 	Thread.assertThreaded = function(){
 		//GET CALLER AND DETERMINE IF RUNNING IN THREADED MODE
 		if (arguments.callee.caller.caller.name != "Thread_prototype_resume")
-			D.error("must call from a thread as \"yield (GUI.refresh());\" ");
+			Log.error("must call from a thread as \"yield (GUI.refresh());\" ");
 	};//method
 
 
@@ -276,7 +276,7 @@ build=function(){
 
 	Thread.suspend = function(request){
 		if (request !== undefined && request.kill === undefined && request.abort === undefined){
-			D.error("Expecting an object with kill() or abort() function");
+			Log.error("Expecting an object with kill() or abort() function");
 		}//endif
 		yield (new Suspend(request));
 	};
@@ -292,7 +292,7 @@ build=function(){
 		if (DEBUG) while(otherThread.keepRunning){
 			yield(Thread.sleep(1000));
 			if (otherThread.keepRunning)
-				D.println("Waiting for thread");
+				Log.note("Waiting for thread");
 		}//while
 
 		if (otherThread.keepRunning){
@@ -357,8 +357,8 @@ if (Exception===undefined){
 
 if (D===undefined){
 	D={};
-	D.error=console.error;
-	D.warning=console.warn;
+	Log.error=console.error;
+	Log.warning=console.warn;
 }//endif
 
 build();
