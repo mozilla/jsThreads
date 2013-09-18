@@ -355,10 +355,12 @@ if (Exception===undefined){
 
 }
 
-if (D===undefined){
-	D={};
-	Log.error=console.error;
-	Log.warning=console.warn;
+if (window.Log===undefined){
+	window.Log={
+		"error":console.error,
+		"warning":console.warn,
+		"note":console.note
+	};
 }//endif
 
 build();
