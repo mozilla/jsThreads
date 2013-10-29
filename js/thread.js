@@ -314,7 +314,7 @@ build=function(){
 	function Thread_join_resume(resumeFunction){
 		var result;
 		try{
-			result = yield;
+			result = yield(undefined);
 		}catch(e){
 			result = e
 		}//try
