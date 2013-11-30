@@ -3,9 +3,9 @@
 <html>
 <head>
 	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript;version=1.7" src="../lib/debug.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/examples/JSONP.js" ></script>
+	<script type="application/javascript;version=1.7" src="lib/debug.js" ></script>
+	<script type="application/javascript;version=1.7" src="../thread.js" ></script>
+	<script type="application/javascript;version=1.7" src="../examples/JSONP.js" ></script>
 </head>
 <body>
 	<script type="application/javascript;version=1.7">
@@ -19,7 +19,11 @@
 
 			try{
 				var result=yield (a.join());
-				GOOD(NAME);
+				if (result.threadResponse instanceof Exception){
+					GOOD(NAME);
+				}else{
+					ERROR(NAME);
+				}//endif
 			}catch(e){
 				ERROR(NAME);
 			}//try

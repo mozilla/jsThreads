@@ -244,7 +244,7 @@ build=function(){
 		}//endif
 
 		if (retval instanceof Exception){
-			Log.alert("Uncaught Error in thread: "+nvl(this.name, "")+"\n  " + retval.toString());
+			Log.alert("Uncaught Error in thread: "+(this.name!==undefined ? this.name : "")+"\n  " + retval.toString());
 		}//endif
 
 		return {"threadResponse":retval};
@@ -362,6 +362,8 @@ if (window.Log===undefined){
 		"note":console.note
 	};
 }//endif
+
+
 
 build();
 

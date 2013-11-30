@@ -8,10 +8,13 @@ function ERROR(message){
 
 
 
-D={};
+Log={};
 Log.error=function(mess, cause){
 	console.error(mess);
 	throw new Exception(mess, cause);
+};
+Log.alert=function(mess){
+	alert(mess);
 };
 
 Log.warning=console.warn;
