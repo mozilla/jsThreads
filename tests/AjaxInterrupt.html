@@ -11,7 +11,7 @@
 	<script type="application/javascript">
 		Thread.run(function*(){
 
-			var NAME="AjaxInterrupt"
+			var NAME="AjaxInterrupt";
 			var a=Thread.run(function*(){
 				try{
 					var data=yield (getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=mozilla&format=json&jsoncallback=?"));

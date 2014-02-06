@@ -28,10 +28,16 @@ build=function(){
 	var dummy={"close":function(){}};//DUMMY GENERATOR
 
 	Thread = function(gen){
-		if (typeof(gen) == "function") gen = gen();	//MAYBE THE FUNCTION WILL CREATE A GENERATOR
-		if (String(gen) !== '[object Generator]'){
-			Log.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
-		}//endif
+		if (typeof(gen) == "function"){
+            try{
+                gen = gen();	//MAYBE THE FUNCTION WILL CREATE A GENERATOR
+                if (String(gen) !== '[object Generator]'){
+                    Log.error("You can not pass a function.  Pass a generator! (have function use the yield keyword instead)");
+                }//endif
+            }catch(e){
+                Log.error("Expecting a Generator!", e);
+            }//endif
+        }//endif
 		this.parentThread = Thread.currentThread;
 
 		this.keepRunning = true;
@@ -141,7 +147,8 @@ build=function(){
 				};
 			} else{ //RETURNING A VALUE/OBJECT/FUNCTION TO CALLER
                 var g = this.stack.pop();
-                g.close(); //CLOSE THE GENERATOR
+                if (g.close!==undefined)
+                    g.close(); //ONLY HAPPENS WHEN EXCEPTION IN THREAD IS NOT CAUGHT
 
 				if (this.stack.length == 0){
 					return this.shutdown(retval);
@@ -153,23 +160,22 @@ build=function(){
 				this.gen = this.stack[this.stack.length-1];
 				if (this.gen.history === undefined) this.gen.history = [];
 
-//			this.gen.history.push(retval===undefined ? "undefined" : retval);
 				Thread.currentThread = this;
 
 				if (retval instanceof Exception){
-					retval = this.gen["throw"](retval);  //THROW METHOD OF THE GENERATOR IS CALLED, WHICH IS SENT TO CALLER AS thrown EXCEPTION
+                    result = this.gen.throw(retval);  //THROW METHOD OF THE GENERATOR IS CALLED, WHICH IS SENT TO CALLER AS thrown EXCEPTION
 				} else{
-					retval = this.gen.send(retval)
+					result = this.gen.next(retval)
 				}//endif
+                if (result.done && this.gen.close!==undefined)
+                    this.gen.close();
+                retval=result.value;
 
 				Thread.currentThread = mainThread;
-
 			} catch(e){
 				Thread.currentThread = mainThread;
 
-				if (e instanceof StopIteration){
-					retval = undefined;	//HAPPENS WHEN THE CALLED GENERATOR IS DONE
-				} else if (e instanceof Exception){
+				if (e instanceof Exception){
 					retval = e;
 				} else{
 					retval = new Exception("Error", e);
@@ -300,7 +306,7 @@ build=function(){
 			//WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
 			//(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
 			var gen = Thread_join_resume(yield(Thread.Resume));
-			gen.send();  //THE FIRST CALL TO send()
+			gen.next();  //THE FIRST CALL TO next()
 			otherThread.stack.unshift(gen);
 			yield (Thread.suspend());
 		} else{
