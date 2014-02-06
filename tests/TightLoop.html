@@ -5,11 +5,11 @@
 	<title>Many JSON Calls</title>
 	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="application/javascript"             src="http://fgnass.github.io/spin.js/dist/spin.js"></script>
-	<script type="application/javascript;version=1.7" src="lib/debug.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
-	<script type="application/javascript;version=1.7" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/flickr.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/spinner.js" ></script>
+	<script type="application/javascript" src="lib/debug.js" ></script>
+	<script type="application/javascript" src="../js/thread.js" ></script>
+	<script type="application/javascript" src="../examples/JSONP.js" ></script>
+	<script type="application/javascript" src="lib/flickr.js" ></script>
+	<script type="application/javascript" src="lib/spinner.js" ></script>
 
 
 </head>
@@ -23,11 +23,11 @@
 
 	<button onclick="stop=true;">Stop Counter</button>
 
-	<script type="application/javascript;version=1.7">
+	<script type="application/javascript">
 		var stop=false;
 
 		var c=0;
-		var t = Thread.run(function(){
+		var t = Thread.run(function*(){
 			while(!stop){
 				yield (Thread.yield());		//PUT THIS IN YOUR BIG LOOPS TO SHARE THE MAIN THREAD
 				$("#message").html("Current count is "+c);

@@ -33,7 +33,7 @@ BASIC FEATURES
 
 **Create a New Thread**
 
-    Thread.run(function(){
+    Thread.run(function*(){
 		//DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
@@ -41,7 +41,7 @@ BASIC FEATURES
 
 **Synchronous Calling Style**
 
-	Thread.run(function(){
+	Thread.run(function*(){
 
 		var a = yield (callServerForData());
 
@@ -57,10 +57,10 @@ BASIC FEATURES
 
 **Wait for Thread to Complete**
 
-	var t=Thread.run(function(){...});	//MAKE THREAD
+	var t=Thread.run(function*(){...});	//MAKE THREAD
 
 	yield (Thread.join(t));				//WAIT TO FINISH
-    
+
 The ```join()``` method will return a structure (```{"threadResponse":value}```)
 with the last value handled by the joinee thread.  This value is either the last
 yielded value or a thrown exception.
@@ -68,7 +68,7 @@ yielded value or a thrown exception.
 **Sleep**
 
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
-    
+
 ```sleep()``` can be interrupted with the ```kill()``` from another thread.
 
 **Cooperate**
@@ -81,12 +81,12 @@ that has passed since the last ```suspend()```
 
 **Stop Thread Early**
 
-	var t=Thread.run(function(){...});  //MAKE THREAD
+	var t=Thread.run(function*(){...});  //MAKE THREAD
 	t.kill();                           //KILL IT (Interrupt)
 
 Use this to ```abort()``` server requests or stop sleeping prematurely.  The
 killed thread will then receive a ``Thread.Interrupt``` exception.
-This exception can be caught just like any other.  It is important your code 
+This exception can be caught just like any other.  It is important your code
 properly recognizes and handles this exception to shutdown cleanly.
 
 
@@ -96,7 +96,7 @@ DRAWBACKS
 Here are some of complications to look out for
 
 
-**ONLY WORKS IN FIREFOX**
+**ONLY WORKS IN FIREFOX (and Chrome with experimental on)**
 
 Generators have been around for a while, but other browsers (and js engines) do
 not seem to implement them.  I hear Chrome has generators coming soon.
@@ -104,7 +104,7 @@ not seem to implement them.  I hear Chrome has generators coming soon.
 
 **MUST BE A GENERATOR**
 
-A common mistake is to forget a "yield" in the function.  This will make
+A common mistake is to forget the "*" in the function definition.  This will make
 it appear as if nothing happens
 
   - **BAD:**
@@ -113,10 +113,10 @@ it appear as if nothing happens
             $("#message").html("Hi there");
         });
 
-  
+
   - **GOOD:**
-   
-        Thread.run(function(){
+
+        Thread.run(function*(){
             $("#message").html("Hi there");
             yield (null)
         });
@@ -168,7 +168,7 @@ elegant threaded code:
 
   - **BAD:**
 
-        Thread.run(function(){
+        Thread.run(function*(){
             $.each(array, function(item){
                 yield (callBackToServer())  //YIELD IS IN NESTED ANONYMOUS FUNCTION
             });
@@ -176,7 +176,7 @@ elegant threaded code:
 
   - **GOOD:**
 
-        Thread.run(function(){
+        Thread.run(function*(){
             for(var i=0;i<array.length;i++){
                 yield (callBackToServer())	//YIELD IS PART OF PASSED FUNCTION
             };
@@ -185,7 +185,7 @@ elegant threaded code:
   - **BETTER? (it depends**)
 
         $.each(array, function(item){
-            Thread.run(function(){
+            Thread.run(function*(){
                 yield (callBackToServer()) //YIELD IS PART OF PASSED FUNCTION
             });
         });
@@ -193,4 +193,3 @@ elegant threaded code:
 
 
 
-    

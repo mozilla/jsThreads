@@ -3,16 +3,16 @@
 <html>
 <head>
 	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript;version=1.7" src="lib/debug.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
-	<script type="application/javascript;version=1.7" src="../examples/JSONP.js" ></script>
+	<script type="application/javascript" src="lib/debug.js" ></script>
+	<script type="application/javascript" src="../js/thread.js" ></script>
+	<script type="application/javascript" src="../examples/JSONP.js" ></script>
 </head>
 <body>
-	<script type="application/javascript;version=1.7">
-		Thread.run(function(){
+	<script type="application/javascript">
+		Thread.run(function*(){
 
 			var NAME="JoinWithDelayedError"
-			var a=Thread.run(function(){
+			var a=Thread.run(function*(){
 				yield (Thread.sleep(500));
 				throw new Exception("problem");
 				ERROR(NAME);

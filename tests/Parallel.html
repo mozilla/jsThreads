@@ -5,11 +5,11 @@
 	<title>Many JSON Calls</title>
 	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="application/javascript"             src="http://fgnass.github.io/spin.js/dist/spin.js"></script>
-	<script type="application/javascript;version=1.7" src="lib/debug.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
-	<script type="application/javascript;version=1.7" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/flickr.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/spinner.js" ></script>
+	<script type="application/javascript" src="lib/debug.js" ></script>
+	<script type="application/javascript" src="../js/thread.js" ></script>
+	<script type="application/javascript" src="../examples/JSONP.js" ></script>
+	<script type="application/javascript" src="lib/flickr.js" ></script>
+	<script type="application/javascript" src="lib/spinner.js" ></script>
 
 </head>
 <body>
@@ -20,7 +20,7 @@
 	<table id="images"></table>
 
 
-	<script type="application/javascript;version=1.7">
+	<script type="application/javascript">
 		var tags=["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
 		var URL="http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
 		var NUM_IMAGES=5;
@@ -32,7 +32,7 @@
 		//WE WILL SPAWN MUTIPLE THREADS TO GET OUR PICTURES
 		var threads=[];
 		for(var i=0;i<tags.length;i++){
-			threads[i]=Thread.run(function(){
+			threads[i]=Thread.run(function*(){
 				var static_i=i;
 				var url=URL.replace("{TAG}", tags[static_i]);
 				var data=yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
@@ -41,7 +41,7 @@
 		}//for
 
 		//ONE MORE THREAD THAT WILL NOTIFY WHEN DONE
-		Thread.run(function(){
+		Thread.run(function*(){
 			//WAIT FOR ALL THREADS TO GET THEIR DATA, AND SHOW THEIR WORK
 			for(var j=threads.length;j--;){
 				yield Thread.join(threads[j]);

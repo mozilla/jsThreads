@@ -16,7 +16,7 @@ build=function(){
 	var DEBUG=false;
 	var FIRST_BLOCK_TIME = 500;	//TIME UNTIL YIELD
 	var NEXT_BLOCK_TIME = 150;	//THE MAXMIMUM TIME (ms) A PIECE OF CODE SHOULD HOG THE MAIN THREAD
-	var YIELD = {"name":"yield"};  //BE COOPERATIVE, WILL PAUSEE VERY MAX_TIME_BLOCK MILLISECONDS
+	var YIELD = {"name":"yield"};  //BE COOPERATIVE, WILL PAUSE EVERY MAX_TIME_BLOCK MILLISECONDS
 
 	//Suspend CLASS
 	var Suspend = function(request){
@@ -95,7 +95,7 @@ build=function(){
 	//REPLACE THESE WHEN YOU WANT SIGNALS ABOUT WORKING THREADS
 	Thread.showWorking=function(){};
 	Thread.hideWorking=function(){};
-	
+
 
 	Thread.prototype.start = function(){
 		Thread.isRunning.push(this);
@@ -140,7 +140,8 @@ build=function(){
 					self.resume(retval);
 				};
 			} else{ //RETURNING A VALUE/OBJECT/FUNCTION TO CALLER
-				this.stack.pop().close(); //CLOSE THE GENERATOR
+                var g = this.stack.pop();
+                g.close(); //CLOSE THE GENERATOR
 
 				if (this.stack.length == 0){
 					return this.shutdown(retval);
@@ -264,17 +265,17 @@ build=function(){
 
 
 	//DO NOT RESUME FOR A WHILE
-	Thread.sleep = function(millis){
+	Thread.sleep = function*(millis){
 		var to=setTimeout((yield(Thread.Resume)), millis);
 		yield (Thread.suspend({"kill":function(){clearTimeout(to);}}))
 	};
 
 	//LET THE MAIN EVENT LOOP GET SOME ACTION
-	Thread.yield = function(){
+	Thread.yield = function*(){
 		yield (YIELD);
 	};
 
-	Thread.suspend = function(request){
+	Thread.suspend = function*(request){
 		if (request !== undefined && request.kill === undefined && request.abort === undefined){
 			Log.error("Expecting an object with kill() or abort() function");
 		}//endif
@@ -288,7 +289,7 @@ build=function(){
 	};
 
 	//WAIT FOR OTHER THREAD TO FINISH
-	Thread.join = function(otherThread){
+	Thread.join = function*(otherThread){
 		if (DEBUG) while(otherThread.keepRunning){
 			yield(Thread.sleep(1000));
 			if (otherThread.keepRunning)
@@ -311,7 +312,7 @@ build=function(){
 	//THIS GENERATOR EXPECTS send TO BE CALLED TWICE ONLY
 	//FIRST WITH NO PARAMETERS, AS REQUIRED BY ALL GENERATORS
 	//THE SEND RUN FROM THE JOINING THREAD TO RETURN THE VALUE
-	function Thread_join_resume(resumeFunction){
+	function* Thread_join_resume(resumeFunction){
 		var result;
 		try{
 			result = yield(undefined);
@@ -323,7 +324,7 @@ build=function(){
 
 	//CALL THE funcTION WITH THE GIVEN PARAMETERS
 	//WILL ADD success AND error FUNCTIONS TO PARAM TO CAPTURE RESPONSE
-	Thread.call = function(func, param){
+	Thread.call = function*(func, param){
 		param.success = yield(Thread.Resume);
 		param.error = function(){
 			throw new Exception("callback to func was error:\n\t"+CNV.object2JSON(arguments));

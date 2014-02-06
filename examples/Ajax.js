@@ -4,7 +4,7 @@
 
 
 // IF THE CALLBACK-BASED FUNCTION USES success AND error, THEN JUST call() IT:
-var ajax=function(param){
+var ajax=function*(param){
 	yield Thread.call($.ajax, param);
 };//method
 

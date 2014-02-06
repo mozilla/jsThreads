@@ -5,11 +5,11 @@
 	<title>Serial Calls</title>
 	<script type="application/javascript"             src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script type="application/javascript"             src="http://fgnass.github.io/spin.js/dist/spin.js"></script>
-	<script type="application/javascript;version=1.7" src="lib/debug.js" ></script>
-	<script type="application/javascript;version=1.7" src="../js/thread.js" ></script>
-	<script type="application/javascript;version=1.7" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/flickr.js" ></script>
-	<script type="application/javascript;version=1.7" src="lib/spinner.js" ></script>
+	<script type="application/javascript" src="lib/debug.js" ></script>
+	<script type="application/javascript" src="../js/thread.js" ></script>
+	<script type="application/javascript" src="../examples/JSONP.js" ></script>
+	<script type="application/javascript" src="lib/flickr.js" ></script>
+	<script type="application/javascript" src="lib/spinner.js" ></script>
 
 
 </head>
@@ -21,14 +21,14 @@
 
 	<table id="images"></table>
 
-	<script type="application/javascript;version=1.7">
+	<script type="application/javascript">
 
 
 		// WE WANT TO GET OUR IMAGES IN ORDER, WE DO NOT MIND IF THEY COME IN SLOW
-		Thread.run(function(){
+		Thread.run(function*(){
 			var tags=["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
 			var URL="http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
-			
+
 
 			for(var i=0;i<tags.length;i++){
 				var url=URL.replace("{TAG}", tags[i]);
