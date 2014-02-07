@@ -34,7 +34,7 @@ BASIC FEATURES
 **Create a New Thread**
 
     Thread.run(function*(){
-		//DO WORK
+    	//DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
@@ -95,16 +95,14 @@ DRAWBACKS
 
 Here are some of complications to look out for
 
-
-**ONLY WORKS IN FIREFOX (and Chrome with experimental on)**
+####Only Works in Firefox (and Chrome with experimental javascript on)####
 
 Generators have been around for a while, but other browsers (and js engines) do
 not seem to implement them.  I hear Chrome has generators coming soon.
 
+####Must be a Generator####
 
-**MUST BE A GENERATOR**
-
-A common mistake is to forget the "*" in the function definition.  This will make
+A common mistake is to forget the star (*) in the function definition.  This will make
 it appear as if nothing happens
 
   - **BAD:**
@@ -118,10 +116,9 @@ it appear as if nothing happens
 
         Thread.run(function*(){
             $("#message").html("Hi there");
-            yield (null)
         });
 
-**ACCIDENTALLY CALLING GENERATORS DIRECTLY**
+####Accidentally Calling Generators Directly####
 
 With so many generators in your code, you may find yourself calling them like
 normal functions.  This is bad.  These 'normal' functions return generator objects,
@@ -137,9 +134,7 @@ executing, this is probably the cause.
 
         yield (doSomeSetup());  //NOW IT WILL WORK
 
-
-
-**HARD TO DEBUG**
+####Hard to Debug####
 
 Because ```Thread``` calls all generators directly, it can be impossible to see the
 stack trace you expect.
@@ -148,20 +143,16 @@ Avoid this problem by keeping your threaded code from making deep threaded calls
 If you need deep logic, it is better implemented with regular functions, called by
 the threaded code.
 
+####Impossible States with Debugger####
 
-
-**IMPOSSIBLE STATES WITH DEBUGGER**
-
-When your debugger is on, and you have your code paused, AND there are pending
+When your debugger is on, AND you have your code paused, AND there are pending
 responses, all bets are off.  The pending response will trigger the javascript
 engine to run despite the debugger, and mess with your program state.
 
 This happens with any javascript program, but just be aware your program can be
-achieve "impossible" states when you are debugging.
+achieve *impossible* states when you are debugging.
 
-
-
-**CAN NOT USE JS FUNCTORS**
+####Can not us JS Functors####
 
 You must pass a generator to ```Thread.run()```.  Javascript's functor style can prevent
 elegant threaded code:
@@ -182,7 +173,7 @@ elegant threaded code:
             };
         });
 
-  - **BETTER? (it depends**)
+  - **BETTER?** (it depends)
 
         $.each(array, function(item){
             Thread.run(function*(){
