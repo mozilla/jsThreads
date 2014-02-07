@@ -1,3 +1,9 @@
+Note
+====
+
+This is the old javscript1.7 version.  It only works in Firefox.
+
+
 jsThreads
 =========
 
@@ -60,7 +66,7 @@ BASIC FEATURES
 	var t=Thread.run(function(){...});	//MAKE THREAD
 
 	yield (Thread.join(t));				//WAIT TO FINISH
-    
+
 The ```join()``` method will return a structure (```{"threadResponse":value}```)
 with the last value handled by the joinee thread.  This value is either the last
 yielded value or a thrown exception.
@@ -68,7 +74,7 @@ yielded value or a thrown exception.
 **Sleep**
 
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
-    
+
 ```sleep()``` can be interrupted with the ```kill()``` from another thread.
 
 **Cooperate**
@@ -86,7 +92,7 @@ that has passed since the last ```suspend()```
 
 Use this to ```abort()``` server requests or stop sleeping prematurely.  The
 killed thread will then receive a ``Thread.Interrupt``` exception.
-This exception can be caught just like any other.  It is important your code 
+This exception can be caught just like any other.  It is important your code
 properly recognizes and handles this exception to shutdown cleanly.
 
 
@@ -113,9 +119,9 @@ it appear as if nothing happens
             $("#message").html("Hi there");
         });
 
-  
+
   - **GOOD:**
-   
+
         Thread.run(function(){
             $("#message").html("Hi there");
             yield (null)
@@ -193,4 +199,3 @@ elegant threaded code:
 
 
 
-    
