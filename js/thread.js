@@ -167,8 +167,6 @@ build=function(){
 				} else{
 					result = this.gen.next(retval)
 				}//endif
-                if (result.done && this.gen.close!==undefined)
-                    this.gen.close();
                 retval=result.value;
 
 				Thread.currentThread = mainThread;

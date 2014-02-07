@@ -4,14 +4,14 @@ jsThreads
 Cooperative "multithreading" in Javascript using generators
 
 
-MOTIVATION
+Motivation
 ----------
 
 I want to avoid callback hell.  Promises do a good job, but force you to manage
 namespace by including parameters to your then() functions.  Threads have the
 benefit of (local) namespace pollution.
 
-BENEFITS
+Benefits
 --------
 
 **Multiple threads of control**
@@ -28,13 +28,13 @@ Functions can be written in familiar procedural style, instead of callback style
 Thread objects allow you to monitor peer thread state and interrupt peer threads.
 
 
-BASIC FEATURES
+Basic Features
 --------------
 
 **Create a New Thread**
 
     Thread.run(function*(){
-    	//DO WORK
+        //DO WORK
 		yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
@@ -90,15 +90,16 @@ This exception can be caught just like any other.  It is important your code
 properly recognizes and handles this exception to shutdown cleanly.
 
 
-DRAWBACKS
+Drawbacks
 ---------
 
 Here are some of complications to look out for
 
 ####Only Works in Firefox (and Chrome with experimental javascript on)####
 
-Generators have been around for a while, but other browsers (and js engines) do
-not seem to implement them.  I hear Chrome has generators coming soon.
+Generators have been around for a while, but other browsers (and js engines) have only
+started to implement them.  To use generators in Chrome enable
+[experimental javascript](chrome://flags/#enable-javascript-harmony).
 
 ####Must be a Generator####
 
