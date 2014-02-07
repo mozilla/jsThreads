@@ -1,62 +1,56 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-		"http://www.w3.org/TR/html4/loose.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<title>Many JSON Calls</title>
-	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript" src="lib/spin.js"></script>
-	<script type="application/javascript" src="lib/debug.js" ></script>
-	<script type="application/javascript" src="../js/thread.js" ></script>
-	<script type="application/javascript" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript" src="lib/flickr.js" ></script>
-	<script type="application/javascript" src="lib/spinner.js" ></script>
+    <title>Many JSON Calls</title>
+    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="application/javascript" src="lib/spin.js"></script>
+    <script type="application/javascript" src="lib/debug.js"></script>
+    <script type="application/javascript" src="../js/thread.js"></script>
+    <script type="application/javascript" src="../examples/JSONP.js"></script>
+    <script type="application/javascript" src="lib/flickr.js"></script>
+    <script type="application/javascript" src="lib/spinner.js"></script>
 
 </head>
 <body>
-	<h2>Call Flickr's public API from multiple threads</h2>
-	<div>
-	Spinner to show no real blocking: <div id="spinner"></div>
-	</div>
-	<table id="images"></table>
+<h2>Call Flickr's public API from multiple threads</h2>
+
+<div>
+    Spinner to show no real blocking:
+    <div id="spinner"></div>
+</div>
+<table id="images"></table>
 
 
-	<script type="application/javascript">
-		var tags=["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
-		var URL="http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
-		var NUM_IMAGES=5;
+<script type="application/javascript">
+    var tags = ["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
+    var URL = "http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
+    var NUM_IMAGES = 5;
 
 
+    //WE WILL SPAWN MUTIPLE THREADS TO GET OUR PICTURES
+    var threads = [];
+    for (var i = 0; i < tags.length; i++) {
+        threads[i] = Thread.run(function*() {
+            var static_i = i;
+            var url = URL.replace("{TAG}", tags[static_i]);
+            var data = yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
+            displayImages(data, tags[static_i]);
+        });
+    }//for
+
+    //ONE MORE THREAD THAT WILL NOTIFY WHEN DONE
+    Thread.run(function*() {
+        //WAIT FOR ALL THREADS TO GET THEIR DATA, AND SHOW THEIR WORK
+        for (var j = threads.length; j--;) {
+            yield Thread.join(threads[j]);
+        }//for
+
+        //SINCE ALL THREADS ARE DONE, THIS IS ALWAYS THE LAST ROW
+        $("#images").append("<tr><td colspan='" + (NUM_IMAGES + 1) + "'>Done Images Loading</td></tr>");
+    });
 
 
-
-		//WE WILL SPAWN MUTIPLE THREADS TO GET OUR PICTURES
-		var threads=[];
-		for(var i=0;i<tags.length;i++){
-			threads[i]=Thread.run(function*(){
-				var static_i=i;
-				var url=URL.replace("{TAG}", tags[static_i]);
-				var data=yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
-				displayImages(data, tags[static_i]);
-			});
-		}//for
-
-		//ONE MORE THREAD THAT WILL NOTIFY WHEN DONE
-		Thread.run(function*(){
-			//WAIT FOR ALL THREADS TO GET THEIR DATA, AND SHOW THEIR WORK
-			for(var j=threads.length;j--;){
-				yield Thread.join(threads[j]);
-			}//for
-
-			//SINCE ALL THREADS ARE DONE, THIS IS ALWAYS THE LAST ROW
-			$("#images").append("<tr><td colspan='"+(NUM_IMAGES+1)+"'>Done Images Loading</td></tr>");
-		});
-
-
-
-
-
-
-
-	</script>
+</script>
 </body>
 </html>

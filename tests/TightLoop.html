@@ -1,41 +1,43 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-		"http://www.w3.org/TR/html4/loose.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<title>Many JSON Calls</title>
-	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript" src="lib/spin.js"></script>
-	<script type="application/javascript" src="lib/debug.js" ></script>
-	<script type="application/javascript" src="../js/thread.js" ></script>
-	<script type="application/javascript" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript" src="lib/flickr.js" ></script>
-	<script type="application/javascript" src="lib/spinner.js" ></script>
+    <title>Many JSON Calls</title>
+    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="application/javascript" src="lib/spin.js"></script>
+    <script type="application/javascript" src="lib/debug.js"></script>
+    <script type="application/javascript" src="../js/thread.js"></script>
+    <script type="application/javascript" src="../examples/JSONP.js"></script>
+    <script type="application/javascript" src="lib/flickr.js"></script>
+    <script type="application/javascript" src="lib/spinner.js"></script>
 
 
 </head>
 <body>
-	<h2>Count Fast Without Blocking</h2>
-	<div id="message"></div>
+<h2>Count Fast Without Blocking</h2>
 
-	<div>
-	Spinner to show no real blocking: <div id="spinner"></div>
-	</div>
+<div id="message"></div>
 
-	<button onclick="stop=true;">Stop Counter</button>
+<div>
+    Spinner to show no real blocking:
+    <div id="spinner"></div>
+</div>
 
-	<script type="application/javascript">
-		var stop=false;
+<button onclick="stop=true;">Stop Counter</button>
 
-		var c=0;
-		var t = Thread.run(function*(){
-			while(!stop){
-				yield (Thread.yield());		//PUT THIS IN YOUR BIG LOOPS TO SHARE THE MAIN THREAD
-				$("#message").html("Current count is "+c);
-				c++;
-			}//while
-		});
+<script type="application/javascript">
+    var stop = false;
+
+    var c = 0;
+    var t = Thread.run(function*() {
+        while (!stop) {
+            yield (Thread.yield());		//PUT THIS IN YOUR BIG LOOPS TO SHARE THE MAIN THREAD
+            $("#message").html("Current count is " + c);
+            c++;
+        }//while
+    });
 
 
-	</script>
+</script>
 </body>
 </html>

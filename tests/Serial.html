@@ -1,43 +1,43 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-		"http://www.w3.org/TR/html4/loose.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<title>Serial Calls</title>
-	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript" src="lib/spin.js"></script>
-	<script type="application/javascript" src="lib/debug.js" ></script>
-	<script type="application/javascript" src="../js/thread.js" ></script>
-	<script type="application/javascript" src="../examples/JSONP.js" ></script>
-	<script type="application/javascript" src="lib/flickr.js" ></script>
-	<script type="application/javascript" src="lib/spinner.js" ></script>
+    <title>Serial Calls</title>
+    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="application/javascript" src="lib/spin.js"></script>
+    <script type="application/javascript" src="lib/debug.js"></script>
+    <script type="application/javascript" src="../js/thread.js"></script>
+    <script type="application/javascript" src="../examples/JSONP.js"></script>
+    <script type="application/javascript" src="lib/flickr.js"></script>
+    <script type="application/javascript" src="lib/spinner.js"></script>
 </head>
 <body>
-	<h2>Call Flickr's public API for each tag, one at a time</h2>
-	<div>
-	Spinner to show no real blocking: <div id="spinner"></div>
-	</div>
+<h2>Call Flickr's public API for each tag, one at a time</h2>
 
-	<table id="images"></table>
+<div>
+    Spinner to show no real blocking:
+    <div id="spinner"></div>
+</div>
 
-	<script type="application/javascript">
+<table id="images"></table>
 
-
-		// WE WANT TO GET OUR IMAGES IN ORDER, WE DO NOT MIND IF THEY COME IN SLOW
-		Thread.run(function*(){
-			var tags=["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
-			var URL="http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
+<script type="application/javascript">
 
 
-			for(var i=0;i<tags.length;i++){
-				var url=URL.replace("{TAG}", tags[i]);
-				var data=yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
-				displayImages(data, tags[i]);
-			}//for
-		});
+    // WE WANT TO GET OUR IMAGES IN ORDER, WE DO NOT MIND IF THEY COME IN SLOW
+    Thread.run(function*() {
+        var tags = ["mozilla", "firefox", "cat", "kitten", "dog", "puppy"];
+        var URL = "http://api.flickr.com/services/feeds/photos_public.gne?tags={TAG}&format=json&jsoncallback=?";
 
 
+        for (var i = 0; i < tags.length; i++) {
+            var url = URL.replace("{TAG}", tags[i]);
+            var data = yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
+            displayImages(data, tags[i]);
+        }//for
+    });
 
 
-	</script>
+</script>
 </body>
 </html>

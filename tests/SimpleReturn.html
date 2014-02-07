@@ -1,31 +1,31 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-		"http://www.w3.org/TR/html4/loose.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-	<script type="application/javascript" src="lib/debug.js" ></script>
-	<script type="application/javascript" src="../js/thread.js" ></script>
-	<script type="application/javascript" src="../examples/JSONP.js" ></script>
+    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="application/javascript" src="lib/debug.js"></script>
+    <script type="application/javascript" src="../js/thread.js"></script>
+    <script type="application/javascript" src="../examples/JSONP.js"></script>
 </head>
 <body>
-	<script type="application/javascript">
-		Thread.run(function*(){
+<script type="application/javascript">
+    Thread.run(function*() {
 
-			var NAME="SimpleReturn";
-			var returnValue={"name":"return value"};
+        var NAME = "SimpleReturn";
+        var returnValue = {"name": "return value"};
 
-			var a=new Thread(function*(){
-				yield (returnValue);
-			});
-			var response=a.start();
+        var a = new Thread(function*() {
+            yield (returnValue);
+        });
+        var response = a.start();
 
-			if (response.threadResponse!=returnValue){
-				ERROR(NAME);
-			}else{
-				GOOD(NAME);
-			}//endif
-		});
+        if (response.threadResponse != returnValue) {
+            ERROR(NAME);
+        } else {
+            GOOD(NAME);
+        }//endif
+    });
 
-	</script>
+</script>
 </body>
 </html>
