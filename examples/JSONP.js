@@ -7,7 +7,10 @@ var getJSON = function*(url) {
     //THIS CURRENT THREAD WILL RESUME WHEN callback IS CALLED
     var req = $.getJSON(url, callback);
 
-    //INDICATE THE CURRENT THREAD WILL SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
-    yield (Thread.suspend(req));
+    //SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
+    var json = yield (Thread.suspend(req));
+
+    //RETURN
+    yield (json);
 };//method
 

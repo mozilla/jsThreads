@@ -28,14 +28,14 @@ Functions can be written in familiar procedural style, instead of callback style
 Thread objects allow you to monitor peer thread state and interrupt peer threads.
 
 
-Basic Features
---------------
+Features
+--------
 
 **Create a New Thread**
 
     Thread.run(function*(){
         //DO WORK
-		yield (null);		//MUST HAVE "yield" IN FUNCTION
+    	yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
 
@@ -73,6 +73,9 @@ yielded value or a thrown exception.
 
 **Cooperate**
 
+When performing long running operations on the main thread, it is a good idea to
+occasionally yield control to the other tasks and threads waiting to run.
+
 	yield (Thread.yield());            //LET OTHER THREADS RUN
 
 A call to ```yield()``` may, or may not suspend, depending on the amount of time
@@ -88,6 +91,45 @@ Use this to ```abort()``` server requests or stop sleeping prematurely.  The
 killed thread will then receive a ``Thread.Interrupt``` exception.
 This exception can be caught just like any other.  It is important your code
 properly recognizes and handles this exception to shutdown cleanly.
+
+**Suspend/Resume Threads**
+
+You will inevitably require your threads interact with other callback-style
+Javscript libraries.  To do this without busy waiting you need to *suspend*
+and *resume* your threads. [JSONP.js](./examples/JSONP.js) is an example of
+how to achieve this:
+
+    var getJSON = function*(url) {
+        //ASK FOR A CALLBACK THAT CAN RESUME THE CURRENT THREAD
+        var callback = yield (Thread.Resume);
+
+        //THIS CURRENT THREAD WILL RESUME WHEN callback IS CALLED
+        var req = $.getJSON(url, callback);
+
+        //SUSPEND UNTIL RESUME CALLBACK IS EXECUTED
+        var json = yield (Thread.suspend(req));
+
+        //RETURN
+        yield (json);
+    };//method
+
+The idea is to ask the jsThreads system for a resume function:  When called,
+this function will resume the current thread.  In this case, the resume function
+is used as a callback and fed into a familiar JQuery call.  Your final step is
+to suspend the thread and trust the resume function is eventually called.  When
+the thread does resume, the first argument of the resume function (the callback)
+will be accessible as a yielded value.
+
+**AJAX**
+
+The AJAX callback style (with its success() and error() callbacks) is pervasive.
+Use the ```Thread.call()``` function to specifically provide these callbacks,
+yield the success() argument, and throw an exception if error() is called.
+[Ajax.js](.examples/Ajax.js) is a example of how to use it:
+
+    var ajax = function*(param) {
+        yield Thread.call($.ajax, param);
+    };//method
 
 
 Drawbacks

@@ -142,7 +142,6 @@ build=function(){
 				retval = function(retval){
 					self.nextYield = new Date().getTime() + NEXT_BLOCK_TIME;
 					self.currentRequest = undefined;
-//				self.stack.push({"close":function(){}}); //DUMMY GENERATOR ON STACK SO RETURN A VALUE DOES NOT STOP THREAD
 					self.resume(retval);
 				};
 			} else{ //RETURNING A VALUE/OBJECT/FUNCTION TO CALLER
@@ -327,11 +326,11 @@ build=function(){
 	}//method
 
 	//CALL THE funcTION WITH THE GIVEN PARAMETERS
-	//WILL ADD success AND error FUNCTIONS TO PARAM TO CAPTURE RESPONSE
+	//WILL ADD success AND error FUNCTIONS TO param TO CAPTURE RESPONSE
 	Thread.call = function*(func, param){
 		param.success = yield(Thread.Resume);
 		param.error = function(){
-			throw new Exception("callback to func was error:\n\t"+CNV.object2JSON(arguments));
+			throw new Exception("callback to func was error:\n\t"+window.JSON.stringify(arguments), undefined);
 		};
 		var instance=func(param);
 		yield (new Suspend(instance));
