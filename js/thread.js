@@ -180,7 +180,6 @@ build=function(){
 			}//try
 		}//while
 		//CAN GET HERE WHEN THREAD IS KILLED AND Thread.Resume CALLS BACK
-//	Thread.numRunning++;	//TO CANCEL THE Thread.numRunning-- IN kill();
 		this.kill(retval);
 	}
 
@@ -287,28 +286,38 @@ build=function(){
 
 
 	//RETURNS THREAD EXCEPTION
-	Thread.prototype.join = function(){
-		return Thread.join(this);
+	Thread.prototype.join = function(timeout){
+		return Thread.join(this, timeout);
 	};
 
 	//WAIT FOR OTHER THREAD TO FINISH
-	Thread.join = function*(otherThread){
-		if (DEBUG) while(otherThread.keepRunning){
-			yield(Thread.sleep(1000));
-			if (otherThread.keepRunning)
-				Log.note("Waiting for thread");
-		}//while
+	Thread.join = function*(otherThread, timeout){
+        if (timeout===undefined){
+            if (DEBUG)
+                while(otherThread.keepRunning){
+          			yield(Thread.sleep(1000));
+          			if (otherThread.keepRunning)
+          				Log.note("Waiting for thread");
+          		}//while
 
-		if (otherThread.keepRunning){
-			//WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
-			//(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
-			var gen = Thread_join_resume(yield(Thread.Resume));
-			gen.next();  //THE FIRST CALL TO next()
-			otherThread.stack.unshift(gen);
-			yield (Thread.suspend());
-		} else{
-			yield ({"threadResponse":otherThread.threadResponse});
-		}//endif
+            if (otherThread.keepRunning){
+                //WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
+                //(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
+                var gen = Thread_join_resume(yield(Thread.Resume));
+                gen.next();  //THE FIRST CALL TO next()
+                otherThread.stack.unshift(gen);
+                yield (Thread.suspend());
+            } else{
+                yield ({"threadResponse":otherThread.threadResponse});
+            }//endif
+        }else{
+            //WE SHOULD USE A REAL SIGNAL, BUT I AM LAZY SO WE BUSY-WAIT
+            for(var t=0;t<10;t++){
+                if (otherThread.keepRunning){
+                    yield(Thread.sleep(timeout/10));
+                }//endif
+            }//for
+        }//endif
 	};
 
 
