@@ -65,6 +65,23 @@ build = function () {
 	};//method
 
 
+	//JUST LIKE RUN, ONLY DOES NOT REGISTER THE THREAD IN isRunning
+	Thread.daemon = function (name, gen) {
+		if (typeof(name) != "string") {
+			gen = name;
+			name = undefined;
+		}//endif
+
+		//START IN SILENT MODE
+		var output = new Thread(gen);
+		output.name = name;
+		output.parentThread = Thread.currentThread;
+		output.parentThread.children.push(this);
+		output.resume(output.stack.pop());
+		return output;
+	};//method
+
+
 	//FEELING LUCKY?  MAYBE THIS GENERATOR WILL NOT DELAY AND RETURN A VALID VALUE BEFORE IT BLOCKS
 	//YOU CAN HAVE IT BLOCK THE MAIN TREAD FOR time MILLISECONDS
 	Thread.runSynchronously = function (gen, time) {
@@ -189,6 +206,9 @@ build = function () {
 
 	//THIS IS A MESS, CALLED FROM DIFFERENT LOCATIONS, AND MUST DISCOVER
 	//CONTEXT TO RUN CORRECT CODE
+	//retval===undefined - NORMAL KILL
+	//retval===true - TOTAL KILL, NO TRY/CATCH (REALLY BAD) SUPPRESS THREAD EXCEPTION
+	//retval instanceof Exception - THROW SPECIFIC THREAD EXCEPTION
 	Thread.prototype.kill = function (retval) {
 		//HOPEFULLY cr WILl BE UNDEFINED, OR NOT, (NOT CHANGING)
 		var cr = this.currentRequest;
@@ -210,7 +230,14 @@ build = function () {
 
 		if (this.stack.length > 0) {
 			this.stack.push(dummy); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
-			this.resume(Thread.Interrupted);
+			if (retval == true) {
+				while (this.stack.length > 0) {
+					var g = this.stack.pop();
+					if (g.close) g.close();  //PREMATURE CLOSE, REALLY BAD
+				}//while
+			} else {
+				this.resume(Thread.Interrupted);
+			}//endif
 			if (this.stack.length > 0)
 				Log.error("Why does this Happen?");
 			return;
