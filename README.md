@@ -35,7 +35,7 @@ Features
 
     Thread.run(function*(){
         //DO WORK
-    	yield (null);		//MUST HAVE "yield" IN FUNCTION
+        yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
 
@@ -81,6 +81,15 @@ occasionally yield control to the other tasks and threads waiting to run.
 A call to ```yield()``` may, or may not suspend, depending on the amount of time
 that has passed since the last ```suspend()```
 
+The ```Thread.yield()``` call is a little slow:  The call defers to the
+trampoline, which calls Thread.yield(), which returns a generator, which is then
+called by the trampoline, which returns the Thread.YIELD constant, which reminds
+the trampoline to check if it's time to yield to another task.  It is more
+direct to simply provide the constant:
+
+    yield (Thread.YIELD);              //LET OTHER THREADS RUN
+
+Admittedly, this breaks the standard ```yield (functionCall())``` form.
 
 **Stop Thread Early**
 
