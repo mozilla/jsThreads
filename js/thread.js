@@ -330,7 +330,8 @@ build = function () {
 			if (otherThread.keepRunning) {
 				//WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
 				//(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
-				var gen = Thread_join_resume(yield(Thread.Resume));
+				var resumeWhenDone = yield(Thread.Resume);
+				var gen = Thread_join_resume(resumeWhenDone);
 				gen.next();  //THE FIRST CALL TO next()
 				otherThread.stack.unshift(gen);
 				yield (Thread.suspend());
