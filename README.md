@@ -35,7 +35,7 @@ Features
 
     Thread.run(function*(){
         //DO WORK
-    	yield (null);		//MUST HAVE "yield" IN FUNCTION
+        yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
 
@@ -65,6 +65,8 @@ The ```join()``` method will return a structure (```{"threadResponse":value}```)
 with the last value handled by the joinee thread.  This value is either the last
 yielded value or a thrown exception.
 
+Joining a thread will demand all child threads are joined too.
+
 **Sleep**
 
 	yield (Thread.sleep(1000));  //JUST ONE SECOND
@@ -81,7 +83,6 @@ occasionally yield control to the other tasks and threads waiting to run.
 A call to ```yield()``` may, or may not suspend, depending on the amount of time
 that has passed since the last ```suspend()```
 
-
 **Stop Thread Early**
 
 	var t=Thread.run(function*(){...});  //MAKE THREAD
@@ -92,10 +93,23 @@ killed thread will then receive a ``Thread.Interrupt``` exception.
 This exception can be caught just like any other.  It is important your code
 properly recognizes and handles this exception to shutdown cleanly.
 
+Killing a thread will also kill all children, which can include ajax requests
+and other scheduled processing.
+
+**Adding Children**
+
+    myThread.addChild({"kill":function(){...}})
+
+Child threads are added automatically to the ```Thread.currentThread``` when
+a thread is made.  You are not limited to Threads: Any object that
+has  a ```kill``` or ```abort``` function can be added.
+
+
+
 **Suspend/Resume Threads**
 
 You will inevitably require your threads interact with other callback-style
-Javscript libraries.  To do this without busy waiting you need to *suspend*
+Javascript libraries.  To do this without busy waiting you need to *suspend*
 and *resume* your threads. [JSONP.js](./examples/JSONP.js) is an example of
 how to achieve this:
 
