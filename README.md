@@ -87,7 +87,7 @@ Admittedly, this breaks the standard ```yield (functionCall())``` form.
 
 **Stop Thread Early**
 
-	var t=Thread.run(function*(){...});  //MAKE THREAD
+	var t=Thread.run(function*(){...}); //MAKE THREAD
 	t.kill();                           //KILL IT (Interrupt)
 
 Use this to ```abort()``` server requests or stop sleeping prematurely.  The
@@ -186,7 +186,8 @@ executing, this is probably the cause.
 
  - **BAD:**
 
-        doSomeSetup();  //YOU CAN'T TELL, BUT THIS IS A GENERATOR.  IT WILL SEEM TO DO NOTHING
+        doSomeSetup();          //YOU CAN'T TELL, BUT THIS IS A
+                                //GENERATOR.  IT WILL SEEM TO DO NOTHING
 
 
  - **GOOD:**
@@ -208,7 +209,8 @@ When your debugger is on, AND you have your code paused, AND there are pending
 responses, all bets are off.  The pending response will trigger the javascript
 engine to run despite the debugger, and mess with your program state.
 
-This happens with any javascript program, but just be aware your program can be
+This is not a problem with jsThreads, it is a problem with debugging any
+javascript program; I just want you to be aware your program can be
 achieve *impossible* states when you are debugging.
 
 ####Can not us JS Functors####
