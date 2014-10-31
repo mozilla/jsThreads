@@ -35,7 +35,6 @@ Features
 
     Thread.run(function*(){
         //DO WORK
-        yield (null);		//MUST HAVE "yield" IN FUNCTION
 	});
 
 
@@ -43,15 +42,15 @@ Features
 
 	Thread.run(function*(){
 
-		var a = yield (callServerForData());
+		var a = yield (requestDataFromServer());
 
 		//DO WORK
 
-		var b = yield (anotherCallToServer(a));
+		var b = yield (anotherRequestToServer(a));
 
 		//MORE WORK
 
-		var c = yield (yetAnotherCall(b));
+		var c = yield (yetAnotherRequest(b));
 
 	});
 
