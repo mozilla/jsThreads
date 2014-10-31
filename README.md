@@ -41,26 +41,19 @@ Features
 **Synchronous Calling Style**
 
 	Thread.run(function*(){
-
 		var a = yield (requestDataFromServer());
-
 		//DO WORK
-
 		var b = yield (anotherRequestToServer(a));
-
 		//MORE WORK
-
 		var c = yield (yetAnotherRequest(b));
-
 	});
 
 **Wait for Thread to Complete**
 
 	var t=Thread.run(function*(){...});	//MAKE THREAD
-
 	yield (Thread.join(t));				//WAIT TO FINISH
 
-The ```join()``` method will return a structure (```{"threadResponse":value}```)
+The ```join()``` function will return a structure (```{"threadResponse":value}```)
 with the last value handled by the joinee thread.  This value is either the last
 yielded value or a thrown exception.
 
@@ -134,7 +127,7 @@ how to achieve this:
 
         //RETURN
         yield (json);
-    };//method
+    };//function
 
 The idea is to ask the jsThreads system for a resume function:  When called,
 this function will resume the current thread.  In this case, the resume function
@@ -152,7 +145,7 @@ yield the success() argument, and throw an exception if error() is called.
 
     var ajax = function*(param) {
         yield Thread.call($.ajax, param);
-    };//method
+    };//function
 
 
 Drawbacks
