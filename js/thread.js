@@ -33,8 +33,8 @@ build = function () {
 	};
 	Suspend.name = "suspend";
 
-	var dummy = {"close": function () {
-	}};//DUMMY GENERATOR
+	var DUMMY_GENERATOR = {"close": function () {
+	}};
 
 	//RETURN FIRST NOT NULL, AND DEFINED VALUE
 	function nvl(){
@@ -58,7 +58,6 @@ build = function () {
 				Log.error("Expecting a Generator!", e);
 			}//endif
 		}//endif
-		this.parentThread = Thread.currentThread;
 
 		this.keepRunning = true;
 		this.gen = null;    //CURRENT GENERATOR
@@ -98,8 +97,6 @@ build = function () {
 		//START IN SILENT MODE
 		var output = new Thread(gen);
 		output.name = name;
-		output.parentThread = Thread.currentThread;
-		output.parentThread.children.push(this);
 		output.resume(output.stack.pop());
 		return output;
 	};//method
@@ -138,11 +135,13 @@ build = function () {
 	function addChild(child){
 		this.children.push(child);
 		child.parentThread=this;
+//		Log.note("add "+child.name+" as child of "+this.name);
+//		Log.note("Children  of "+this.name+": "+CNV.Object2JSON(this.children.select("name")));
 	}//function
 	Thread.prototype.addChild = addChild;
 
 	var mainThread = {"name": "main thread", "children": [], "addChild":addChild};
-	Thread.currentThread = mainThread
+	Thread.currentThread = mainThread;
 	Thread.isRunning = [];
 
 	//REPLACE THESE WHEN YOU WANT SIGNALS ABOUT WORKING THREADS
@@ -154,8 +153,7 @@ build = function () {
 
 	Thread.prototype.start = function () {
 		Thread.isRunning.push(this);
-		this.parentThread = Thread.currentThread;
-		this.parentThread.children.push(this);
+		Thread.currentThread.addChild(this);
 		Thread.showWorking(Thread.isRunning.length);
 		return this.resume(this.stack.pop());
 	};
@@ -206,23 +204,23 @@ build = function () {
 				}//endif
 			}//endif
 
+			var selfThread=Thread.currentThread;
+			Thread.currentThread = this;
 			try {
 				this.gen = this.stack[this.stack.length - 1];
 				if (this.gen.history === undefined) this.gen.history = [];
 
-				Thread.currentThread = this;
-
+				var result;
 				if (retval instanceof Exception) {
 					result = this.gen.throw(retval);  //THROW METHOD OF THE GENERATOR IS CALLED, WHICH IS SENT TO CALLER AS thrown EXCEPTION
 				} else {
 					result = this.gen.next(retval)
 				}//endif
 				retval = result.value;
-
-				Thread.currentThread = mainThread;
 			} catch (e) {
-				Thread.currentThread = mainThread;
 				retval = Exception.wrap(e);
+			}finally{
+				Thread.currentThread = selfThread;
 			}//try
 		}//while
 		//CAN GET HERE WHEN THREAD IS KILLED AND Thread.Resume CALLS BACK
@@ -235,8 +233,9 @@ build = function () {
 	//retval===true - TOTAL KILL, NO TRY/CATCH (REALLY BAD) SUPPRESS THREAD EXCEPTION
 	//retval instanceof Exception - THROW SPECIFIC THREAD EXCEPTION
 	Thread.prototype.kill = function(retval){
-		//HOPEFULLY cr WILl BE UNDEFINED, OR NOT, (NOT CHANGING)
-		var children=this.children;
+
+		var children=this.children.copy();  //CHILD THREAD WILL REMOVE THEMSELVES FROM THIS LIST
+//		Log.note("Killing "+CNV.Object2JSON(children.select("name"))+" child threads");
 		for(var c=0;c<children.length;c++){
 			var child = children[c];
 			if (!child) continue;
@@ -252,7 +251,7 @@ build = function () {
 		}//for
 
 		if (this.stack.length > 0) {
-			this.stack.push(dummy); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
+			this.stack.push(DUMMY_GENERATOR); //TOP OF STACK IS THE RUNNING GENERATOR, THIS kill() CAME FROM BEYOND
 			if (retval==true){
 				while(this.stack.length>0){
 					var g = this.stack.pop();
