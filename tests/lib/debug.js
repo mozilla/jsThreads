@@ -6,15 +6,16 @@ function ERROR(message) {
 }
 
 
-Log = {};
-Log.error = function (mess, cause) {
-    console.error(mess);
-    throw new Exception(mess, cause);
-};
-Log.alert = function (mess) {
-    alert(mess);
-};
-
-Log.warning = console.warn;
-
+if (!window.Log){
+	Log = {};
+	Log.error = function(mess, cause){
+		console.error(mess);
+		throw new Exception(mess, cause);
+	};
+	Log.alert = function(mess){
+		alert(mess);
+	};
+	Log.warning = console.warn;
+	Log.note = function(v){console.log(v);};
+}//endif
 

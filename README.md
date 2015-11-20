@@ -1,7 +1,7 @@
 jsThreads
 =========
 
-Cooperative "multithreading" in Javascript using generators
+Cooperative "multithreading" in Javascript using generators.
 
 
 Motivation
@@ -14,18 +14,10 @@ benefit of (local) namespace pollution.
 Benefits
 --------
 
-**Multiple threads of control**
-
-All the thrill of multi-threaded programming, with none of the race conditions,
-deadlocking, or corrupted state you have from real threading.
-
-**Procedural Style**
-
-Functions can be written in familiar procedural style, instead of callback style.
-
-**Threads are Objects**
-
-Thread objects allow you to monitor peer thread state and interrupt peer threads.
+* **Multiple threads of control** - All the thrill of multi-threaded programming, with none of the race conditions, deadlocking, or corrupted state you have from real threading.
+* **Procedural style** - Functions can be written in familiar procedural style, instead of callback style.
+* **try/catch blocks work** - Because of he procedural style, throwing and catching exceptions continue to work as expected 
+* **Threads are objects** - Thread objects allow you to monitor peer thread state and interrupt peer threads.
 
 
 Features
@@ -33,9 +25,12 @@ Features
 
 **Create a New Thread**
 
+Create a new thread of control, which is left to its own devices, and the caller can continue with its own work. 
+
     Thread.run(function*(){
         //DO WORK
 	});
+
 
 
 **Synchronous Calling Style**
@@ -48,13 +43,16 @@ Features
 		var c = yield (yetAnotherRequest(b));
 	});
 
+All function* calls are in order, as if written synchronously.  The jsThread library will weave this function with others to achieve parallelism.
+
+
 **Wait for Thread to Complete**
 
 	var t=Thread.run(function*(){...});	//MAKE THREAD
 	yield (Thread.join(t));				//WAIT TO FINISH
 
 The ```join()``` function will return a structure (```{"threadResponse":value}```)
-with the last value handled by the joinee thread.  This value is either the last
+with the last value handled by the joinee thread (`t`).  This value is either the last
 yielded value or a thrown exception.
 
 Joining a thread will demand all child threads are joined too.
@@ -81,7 +79,7 @@ called by the trampoline, which returns the Thread.YIELD constant, which reminds
 the trampoline to check if it's time to yield to another task.  It is more
 direct to simply provide the constant:
 
-    yield (Thread.YIELD);              //LET OTHER THREADS RUN
+    yield (Thread.YIELD);              //LET OTHER THREADS RUN (alternate)
 
 Admittedly, this breaks the standard ```yield (functionCall())``` form.
 

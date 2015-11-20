@@ -1,45 +1,50 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+	"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <script type="application/javascript" src="lib/debug.js"></script>
-    <script type="application/javascript" src="../js/thread.js"></script>
-    <script type="application/javascript" src="../examples/JSONP.js"></script>
+	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="application/javascript" src="lib/debug.js"></script>
+	<script type="application/javascript" src="../js/thread.js"></script>
+	<script type="application/javascript" src="../examples/JSONP.js"></script>
 </head>
 <body>
 <script type="application/javascript">
-    Thread.run(function*() {
+Thread.run("main", function*(){
 
-        var done = {"done": "yes"};
-        var NAME = "YieldInterrupt"
-        var b = Thread.run(function*() {
-            try {
-                var t = 0;
-                while (Thread.currentThread.keepRunning) {
-                    t++;
-                    yield (Thread.yield())
-                }
-                ERROR(NAME);
-                yield(null)
-            } catch (e) {
-                GOOD(NAME);
-                yield(done)
-            }
-            ERROR(NAME);
-            yield(null)
-        });
+	var done = {"done": "yes"};
+	var NAME = "YieldInterrupt";
+	var b = Thread.run("b", function*(){
+		try {
+			var t = 0;
+			while (Thread.currentThread.keepRunning) {
+				t++;
+				yield (Thread.yield())
+			}
+			ERROR(NAME);
+			yield(null)
+		} catch (e) {
+			GOOD(NAME);
+			yield(done)
+		}
+		ERROR(NAME);
+		yield(null)
+	});
 
-        b.kill();
+	b.kill();
 
-        var result = yield (b.join());
+	try {
+		var result = yield (b.join());
+		if (result == done) {
+			GOOD(NAME);
+		}else{
+			ERROR(NAME);
+		}//endif
+	}catch (e){
+		ERROR(NAME);
+	}//try
 
-        if (result.threadResponse !== done) {
-            ERROR(NAME);
-        } else {
-            GOOD(NAME);
-        }//endif
-    });
+
+});
 
 
 </script>

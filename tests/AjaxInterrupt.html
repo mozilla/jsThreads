@@ -9,10 +9,10 @@
 </head>
 <body>
 <script type="application/javascript">
-    Thread.run(function*() {
+    Thread.run("main", function*() {
 
         var NAME = "AjaxInterrupt";
-        var a = Thread.run(function*() {
+        var a = Thread.run("a", function*() {
             try {
                 var data = yield (getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=mozilla&format=json&jsoncallback=?"));
                 ERROR(NAME);
@@ -23,20 +23,18 @@
             ERROR(NAME);
         });
 
-        while (!a.currentRequest) {
+        while (a.children.length==0) {
             yield (Thread.sleep(50));
         }
         a.kill();
 
 
-        var result = yield (a.join());
-        if (result === undefined) {
-            ERROR(NAME);
-        } else if (result.threadResponse instanceof Exception) {
-            GOOD(NAME);
-        } else {
-            ERROR(NAME);
-        }//endif
+		try{
+			yield (a.join());
+			ERROR(NAME);
+		}catch (e){
+			GOOD(NAME);
+		}//try
 
     });
 
