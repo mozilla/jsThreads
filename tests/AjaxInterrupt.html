@@ -1,42 +1,42 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
+	"http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-    <script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
-    <script type="application/javascript" src="lib/debug.js"></script>
-    <script type="application/javascript" src="../js/thread.js"></script>
-    <script type="application/javascript" src="../examples/JSONP.js"></script>
+	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+	<script type="application/javascript" src="lib/debug.js"></script>
+	<script type="application/javascript" src="../js/thread.js"></script>
+	<script type="application/javascript" src="../examples/JSONP.js"></script>
 </head>
 <body>
 <script type="application/javascript">
-    Thread.run("main", function*() {
+Thread.run("main", function*(){
 
-        var NAME = "AjaxInterrupt";
-        var a = Thread.run("a", function*() {
-            try {
-                var data = yield (getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=mozilla&format=json&jsoncallback=?"));
-                ERROR(NAME);
-            } catch (e) {
-                GOOD(NAME);
-                throw e;
-            }
-            ERROR(NAME);
-        });
-
-        while (a.children.length==0) {
-            yield (Thread.sleep(50));
-        }
-        a.kill();
-
-
-		try{
-			yield (a.join());
+	var NAME = "AjaxInterrupt";
+	var a = Thread.run("a", function*(){
+		try {
+			yield (getJSON("http://api.flickr.com/services/feeds/photos_public.gne?tags=mozilla&format=json&jsoncallback=?"));
 			ERROR(NAME);
-		}catch (e){
+		} catch (e) {
 			GOOD(NAME);
-		}//try
+			throw e;
+		}
+		ERROR(NAME);
+	});
 
-    });
+	while (a.children.length == 0) {
+		yield (Thread.sleep(50));
+	}
+	a.kill();
+
+
+	try {
+		yield (a.join());
+		ERROR(NAME);
+	} catch (e) {
+		GOOD(NAME);
+	}//try
+
+});
 
 
 </script>
