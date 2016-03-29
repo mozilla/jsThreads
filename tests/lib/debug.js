@@ -13,7 +13,7 @@ if (!window.Log){
 		throw new Exception(mess, cause);
 	};
 	Log.alert = function(mess){
-		alert(mess);
+    Log.note("************************************************************\n" + mess + top);
 	};
 	Log.warning = console.warn;
 	Log.note = function(v){console.log(v);};

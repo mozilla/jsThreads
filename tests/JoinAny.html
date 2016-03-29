@@ -13,7 +13,7 @@
 
 </head>
 <body>
-<h2>Call Flickr's public API from multiple threads</h2>
+<h2>Call Flickr's public API from multiple threads, show fastest response only</h2>
 
 <div>
     Spinner to show insignificant blocking:
@@ -28,26 +28,26 @@
     var NUM_IMAGES = 5;
 
 
-    //WE WILL SPAWN MULTIPLE THREADS TO GET OUR PICTURES
-    var threads = [];
-    for (var i = 0; i < tags.length; i++) {
-        threads[i] = Thread.run((function*(static_i) {
-            var url = URL.replace("{TAG}", tags[static_i]);
-            var data = yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
-            displayImages(data, tags[static_i]);
-        })(i));
-    }//for
+    Thread.run(function*(){
+	    //WE WILL SPAWN MULTIPLE THREADS TO GET OUR PICTURES
+	    var threads = [];
+	    for (var i = 0; i < tags.length; i++) {
+	        threads[i] = Thread.run((function*(static_i) {
+	            var url = URL.replace("{TAG}", tags[static_i]);
+	            var data = yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
+	            displayImages(data, tags[static_i]);
+	        })(i));
+	    }//for
 
-    //ONE MORE THREAD THAT WILL NOTIFY WHEN DONE
-    Thread.run(function*() {
-        //WAIT FOR ALL THREADS TO GET THEIR DATA, AND SHOW THEIR WORK
-        for (var j = threads.length; j--;) {
-            yield Thread.join(threads[j]);
-        }//for
+	    var done = yield (Thread.joinAny(threads));
+	    for(var t=0;t<threads.length;t++){
+			threads[t].kill();
+	    }//for
 
-        //SINCE ALL THREADS ARE DONE, THIS IS ALWAYS THE LAST ROW
-        $("#images").append("<tr><td colspan='" + (NUM_IMAGES + 1) + "'>Done Images Loading</td></tr>");
+	    //SINCE ALL THREADS ARE DONE, THIS IS ALWAYS THE LAST ROW
+	    $("#images").append("<tr><td colspan='" + (NUM_IMAGES + 1) + "'>One set of Images Loaded</td></tr>");
     });
+
 
 
 </script>
