@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<script type="application/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	<script type="application/javascript" src="lib/debug.js"></script>
+	<script type="application/javascript" src="../js/thread.js"></script>
+	<script type="application/javascript" src="../examples/JSONP.js"></script>
+</head>
+<body>
+<script type="application/javascript">
+Thread.run(function*(){
+
+	var NAME = "JoinAnyWithDoneError";
+	var a = Thread.run(function*(){
+		throw new Exception("problem");
+	});
+
+	var b = Thread.run(function*(){
+		yield (Thread.sleep(200));
+		yield ("yay!");
+	});
+
+	try {
+		var result = yield (Thread.joinAny([a, b]));
+		if (result=="yay!") {
+			GOOD(NAME);
+		}else {
+			ERROR(NAME);
+		}//endif
+	} catch (e) {
+		ERROR(NAME);
+	}//try
+});
+
+</script>
+</body>
+</html>

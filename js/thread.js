@@ -40,7 +40,7 @@ build = function(){
     currentTimestamp = Date.now;
   }//endif
 
-  var DEBUG = false;
+  var DEBUG = true;
   var POPUP_ON_ERROR = true;
   var FIRST_BLOCK_TIME = 500;  //TIME UNTIL YIELD
   var NEXT_BLOCK_TIME = 150;  //THE MAXMIMUM TIME (ms) A PIECE OF CODE SHOULD HOG THE MAIN THREAD
@@ -88,6 +88,7 @@ build = function(){
     this.stack = [gen];
     this.nextYield = currentTimestamp() + FIRST_BLOCK_TIME;
     this.children = [];
+    this.joined=[];   //FUNCTIONS TO RUN AFTER THREAD COMPLETED
   };
 
   Thread.YIELD = YIELD;
@@ -234,7 +235,26 @@ build = function(){
           expendedGenerator.close(); //ONLY HAPPENS WHEN EXCEPTION IN THREAD IS NOT CAUGHT
 
         if (this.stack.length == 0) {
-          return this.shutdown(retval);
+          this.cleanup(retval);
+          if (this.joined.length>0) {
+            var joined = this.joined.slice();  //COPY
+            for (var f = 0; f < joined.length; f++) {
+              try {
+                joined[f](retval)
+              } catch (e) {
+                Log.warning("not expected")
+              }//try
+            }//for
+          }else if (retval instanceof Exception) {
+            if (POPUP_ON_ERROR || DEBUG) {
+              var details = retval.toString();
+              if (details == "[object Object]") details = retval.message;
+              Log.alert("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  " + details);
+            } else {
+              Log.warning("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  ", retval);
+            }//endif
+          }//endif
+          return retval;
         }//endif
       }//endif
 
@@ -267,6 +287,7 @@ build = function(){
   //retval===true - TOTAL KILL, NO TRY/CATCH (REALLY BAD) SUPPRESS THREAD EXCEPTION
   //retval instanceof Exception - THROW SPECIFIC THREAD EXCEPTION
   Thread.prototype.kill = function(retval){
+    if (!this.keepRunning) return;  //ALREADY DEAD
 
     var children = this.children.slice();  //CHILD THREAD WILL REMOVE THEMSELVES FROM THIS LIST
 //    Log.note("Killing "+convert.value2json(children.select("name"))+" child threads");
@@ -315,63 +336,18 @@ build = function(){
     }//endif
   };
 
-  //ASSUME THERE IS NO MORE STUFF FOR THREAD TO DO
-  Thread.prototype.shutdown = function(retval){
-    this.threadResponse = retval;        //REMEMBER FOR THREAD THAT JOINS WITH THIS
+  Thread.prototype.cleanup= function(retval){
+    if (DEBUG){
+      Log.note("Cleanup "+this.name);
+    }//endif
+    this.threadResponse = retval;				//REMEMBER FOR THREAD THAT JOINS WITH THIS
     this.keepRunning = false;
-
     this.parentThread.children.remove(this);
     Thread.isRunning.remove(this);
-
     if (Thread.isRunning.length == 0) {
       Thread.hideWorking();
     }//endif
-
-    if (retval instanceof Exception) {
-      if (POPUP_ON_ERROR || DEBUG) {
-        var details = retval.toString();
-        if (details == "[object Object]") details = retval.message;
-        Log.alert("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  " + details);
-      } else {
-        Log.warning("Uncaught Error in thread: " + coalesce(this.name, "") + "\n  ", retval);
-      }//endif
-    }//endif
-
-    return retval;
   };
-
-
-  //var stackPattern=/(.*)@(.*):(\d+):(\d+)/;
-  //function parseStack(stackString){
-  //	var output = [];
-  //	if (stackString===undefined || stackString==null) return output;
-  //	stackString.split("\n").forEach(function(line){
-  //		var parts=stackPattern.exec(line);
-  //		if (parts==null) return;
-  //		output.push({
-  //			"function":parts[1],
-  //			"fileName":parts[2],
-  //			"lineNumber":parts[3],
-  //			"columnNumber":parts[4]
-  //		});
-  //	});
-  //	return output;
-  //}//function
-  //
-  ////PUT AT THE BEGINNING OF A GENERATOR TO ENSURE IT WILL ONLY BE CALLED USING yield()
-  //Thread.assertThreaded = function(){
-  //	var caller = null;
-  //	try{
-  //		throw Error();
-  //	}catch (e){
-  //		//THIS IS A BETTER PATH, GIVEN SOME IMPORTED JS FILE CAN CALL importScript() DIRECTLY
-  //		caller = parseStack(e.stack)[1].function;
-  //	}//try
-  //
-  //	//GET CALLER AND DETERMINE IF RUNNING IN THREADED MODE
-  //	if (caller != "Thread_prototype_resume")
-  //		Log.error("must call from a thread as \"yield (GUI.refresh());\" ");
-  //};//method
 
   //PUT AT THE BEGINNING OF A GENERATOR TO ENSURE IT WILL ONLY BE CALLED USING yield()
   Thread.assertThreaded = function(){
@@ -379,7 +355,6 @@ build = function(){
     if (arguments["callee"].caller.caller.name != "Thread_prototype_resume")
       Log.error("must call from a thread as \"yield (GUI.refresh());\" ");
   };//method
-
 
   //DO NOT RESUME FOR A WHILE
   Thread.sleep = function*(millis){
@@ -389,7 +364,7 @@ build = function(){
       var threadName = Thread.currentThread.name;
       var temp = resume;
       resume = function(){
-        Log.note("done timeout of " + millis + ", resuming thread " + threadName);
+        Log.note("done sleep of " + millis + ", resuming thread " + threadName);
         temp()
       };
     }//endif
@@ -431,45 +406,6 @@ build = function(){
   };
 
 
-  /*
-   * RESUME WHEN ANY THREAD IN LIST IS COMPLETE (FAIL, OR NOT), IGNORE THE REST
-   */
-  Thread.joinAny = function*(otherThreads){
-    var resumeCurrentThread = yield(Thread.Resume);
-
-    var immediateResponse = (function(resumeCurrentThread){
-      for (var i = 0; i < otherThreads.length; i++) {
-        var otherThread = otherThreads[i];
-        if (!otherThread.keepRunning) {
-          resumeCurrentThread = null;
-          return otherThread.threadResponse;
-        }//endif
-
-        //WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
-        //(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
-        var gen = threadResumeOnJoin(otherThread, function(retval){
-          if (resumeCurrentThread) {
-            var temp = resumeCurrentThread;
-            resumeCurrentThread = null;
-            temp(retval)
-          }//endif
-        });
-        gen.next();  //THE FIRST CALL TO next()
-        otherThread.stack.unshift(gen);
-        if (DEBUG) {
-          Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name)
-        }//endif
-      }//for
-      return undefined;
-    })(resumeCurrentThread);
-
-    if (immediateResponse === undefined) {
-      yield (Thread.suspend());
-    } else {
-      yield (immediateResponse);
-    }//endif
-  };
-
   //WAIT FOR OTHER THREAD TO FINISH
   Thread.join = function*(otherThread, timeout){
     var children = otherThread.children.slice(); //copy
@@ -480,58 +416,71 @@ build = function(){
       yield Thread.join(childThread, timeout);
     }//for
 
-
-    if (timeout === undefined) {
-      if (DEBUG)
-        while (otherThread.keepRunning) {
-          yield(Thread.sleep(1000));
-          if (otherThread.keepRunning)
-            Log.note("Waiting for thread");
-        }//while
-
-      if (otherThread.keepRunning) {
-        //WE WILL SIMPLY MAKE THE JOINING THREAD LOOK LIKE THE otherThread's CALLER
-        //(WILL ALSO PACKAGE ANY EXCEPTIONS THAT ARE THROWN FROM otherThread)
-        var resumeWhenDone = yield(Thread.Resume);
-        var gen = threadResumeOnJoin(otherThread, resumeWhenDone);
-        gen.next();  //THE FIRST CALL TO next()
-        otherThread.stack.unshift(gen);
-        if (DEBUG) {
-          Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name)
-        }
-        yield (Thread.suspend());
-      } else {
-        yield (otherThread.threadResponse);
-      }//endif
-    } else {
-      //WE SHOULD USE A REAL SIGNAL, BUT I AM LAZY SO WE BUSY-WAIT
-      for (var t = 0; t < 10; t++) {
-        if (otherThread.keepRunning) {
-          yield(Thread.sleep(timeout / 10));
-        }//endif
-      }//for
+    if (!otherThread.keepRunning) {
+      yield (otherThread.threadResponse);
     }//endif
+
+    var resumeWhenDone = yield(Thread.Resume);
+    otherThread.joined.push(resumeWhenDone);
+    if (timeout!=null) {
+      setTimeout(function(){
+        otherThread.joined.remove(resumeWhenDone);
+        resumeWhenDone(Thread.TIMEOUT);
+      }, timeout)
+    }//endif
+
+    if (DEBUG) Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name);
+    yield (Thread.suspend());
   };
 
 
-  //THIS GENERATOR EXPECTS send TO BE CALLED TWICE ONLY
-  //FIRST WITH NO PARAMETERS, AS REQUIRED BY ALL GENERATORS
-  //THE SEND RUN FROM THE JOINING THREAD TO RETURN THE VALUE
-  function* threadResumeOnJoin(otherThread, resumeFunction){
-    var result;
-    try {
-      result = yield(undefined);
-    } catch (e) {
-      if (POPUP_ON_ERROR || DEBUG) {
-        Log.alert("Uncaught Error in thread: " + (otherThread.name !== undefined ? otherThread.name : "") + "\n  " + e.toString());
-      } else {
-        Log.warning("Uncaught Error in thread: " + (otherThread.name !== undefined ? otherThread.name : "") + "\n  ", e);
-      }//endif
+  /*
+   * RESUME WHEN ANY THREAD IN LIST DOES NOT FAIL AND IS DONE, OR
+   * THROW THE EXCEPTION OF THE LAST-COMPLETED-THREAD
+   */
+  Thread.joinAny = function*(otherThreads){
+    var resumeCurrentThread = yield(Thread.Resume);
 
-      result = e
-    }//try
-    resumeFunction(result);  //PACK TO HIDE EXCEPTION
-  }//method
+    var immediateResponse = (function(resumeCurrentThread){
+      var immediateResponse=undefined;
+      var livingThreads = otherThreads.length;
+
+      for (var i = 0; i < otherThreads.length; i++) {
+        var otherThread = otherThreads[i];
+        if (!otherThread.keepRunning) {
+          livingThreads--;
+          var retval = otherThread.threadResponse;
+          if (resumeCurrentThread && (livingThreads == 0 || !(retval instanceof Exception))) {
+            if (DEBUG) Log.note(otherThread.name + " already completed, continuing " + Thread.currentThread.name);
+            resumeCurrentThread = null;
+            immediateResponse = retval;
+          }//endif
+        }else{
+          //WRAP THE RESUME FUNCTION SO IT IS ONLY RUN ONCE
+          var resumeOnce = function(retval){
+            livingThreads--;
+            if (resumeCurrentThread && (livingThreads == 0 || !(retval instanceof Exception))) {
+              if (DEBUG) Log.note(otherThread.name + " completed without error, resuming thread...");
+              var temp = resumeCurrentThread;
+              resumeCurrentThread = null;
+              temp(retval)
+            }//endif
+            return retval;
+          };
+          otherThread.joined.push(resumeOnce);
+          if (DEBUG) Log.note("pausing thread " + Thread.currentThread.name + " while joining " + otherThread.name);
+        }//endif
+      }//for
+
+      return immediateResponse;
+    })(resumeCurrentThread);
+
+    if (immediateResponse === undefined) {
+      yield (Thread.suspend());
+    } else {
+      yield (immediateResponse);
+    }//endif
+  };
 
   //CALL THE funcTION WITH THE GIVEN PARAMETERS
   //WILL ADD success AND error FUNCTIONS TO param TO CAPTURE RESPONSE
