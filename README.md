@@ -139,7 +139,7 @@ will be accessible as a yielded value.
 The AJAX callback style (with its success() and error() callbacks) is pervasive.
 Use the ```Thread.call()``` function to specifically provide these callbacks,
 yield the success() argument, and throw an exception if error() is called.
-[Ajax.js](.examples/Ajax.js) is a example of how to use it:
+[Ajax.js](examples/Ajax.js) is a example of how to use it:
 
     var ajax = function*(param) {
         yield Thread.call($.ajax, param);
