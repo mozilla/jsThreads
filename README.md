@@ -187,10 +187,20 @@ executing, this is probably the cause.
         doSomeSetup();          //YOU CAN'T TELL, BUT THIS IS A
                                 //GENERATOR.  IT WILL SEEM TO DO NOTHING
 
-
  - **GOOD:**
 
         yield (doSomeSetup());  //NOW IT WILL WORK
+        
+This happens often to me when I am joining threads:
+
+ - **BAD:**
+
+        Thread.join(A);     /HEY! Where are A's artifacts!?
+
+ - **GOOD:**
+
+        yield Thread.join(A);   //Oh! I forgot to wait for A to finish.
+        
 
 ####Hard to Debug####
 
