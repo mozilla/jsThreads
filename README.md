@@ -43,7 +43,9 @@ Create a new thread of control, which is left to its own devices, and the caller
 		var c = yield (yetAnotherRequest(b));
 	});
 
-All function* calls are in order, as if written synchronously.  The jsThread library will weave this function with others to achieve parallelism.
+All function* calls are in order, as if written synchronously.  The jsThread 
+library will weave this function with others to achieve the illusion of 
+parallelism.
 
 
 **Wait for Thread to Complete**
@@ -51,11 +53,10 @@ All function* calls are in order, as if written synchronously.  The jsThread lib
 	var t=Thread.run(function*(){...});	//MAKE THREAD
 	yield (Thread.join(t));				//WAIT TO FINISH
 
-The ```join()``` function will return a structure (```{"threadResponse":value}```)
-with the last value handled by the joinee thread (`t`).  This value is either the last
-yielded value or a thrown exception.
+The ```join()``` function will return last value handled by the joinee thread (`t`), 
+or throw an exception if the thread (`t`) failed.  
 
-Joining a thread will demand all child threads are joined too.
+Joining a thread will demand all children of the joinee are joined too.
 
 **Sleep**
 
@@ -103,7 +104,6 @@ and other scheduled processing.
 Child threads are added automatically to the ```Thread.currentThread``` when
 a thread is made.  You are not limited to Threads: Any object that
 has  a ```kill``` or ```abort``` function can be added.
-
 
 
 **Suspend/Resume Threads**
@@ -211,7 +211,7 @@ This is not a problem with jsThreads, it is a problem with debugging any
 javascript program; I just want you to be aware your program can be
 achieve *impossible* states when you are debugging.
 
-####Can not us JS Functors####
+####Can not use JS Functors####
 
 You must pass a generator to ```Thread.run()```.  Javascript's functor style can prevent
 elegant threaded code:

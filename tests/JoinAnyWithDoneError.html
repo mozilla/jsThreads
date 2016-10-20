@@ -9,14 +9,14 @@
 </head>
 <body>
 <script type="application/javascript">
-Thread.run(function*(){
+Thread.run("main", function*(){
 
 	var NAME = "JoinAnyWithDoneError";
-	var a = Thread.run(function*(){
+	var a = Thread.run("a", function*(){
 		throw new Exception("problem");
 	});
 
-	var b = Thread.run(function*(){
+	var b = Thread.run("b", function*(){
 		yield (Thread.sleep(200));
 		yield ("yay!");
 	});

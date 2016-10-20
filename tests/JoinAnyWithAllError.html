@@ -11,19 +11,24 @@
 <script type="application/javascript">
 Thread.run("main", function*(){
 
-	var NAME = "JoinWithError";
-	var a = Thread.run(function*(){
-		throw new Exception("problem");
-		yield (null);
+	var NAME = "JoinAnyWithAllError";
+	var a = Thread.run("a", function*(){
+		yield (Thread.sleep(200));
+		throw new Exception("problem a");
+	});
+
+	var b = Thread.run("b", function*(){
+		yield (Thread.sleep(200));
+		throw new Exception("problem b");
 	});
 
 	try {
-		var result = yield (a.join());
+		var result = yield (Thread.joinAny([a, b]));
 		ERROR(NAME);
 	} catch (e) {
-		if (e.message == "problem") {
+		if (e.message=="problem b"){
 			GOOD(NAME);
-		} else {
+		}else{
 			ERROR(NAME);
 		}//endif
 	}//try

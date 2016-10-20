@@ -28,11 +28,11 @@
     var NUM_IMAGES = 5;
 
 
-    Thread.run(function*(){
+    Thread.run("main", function*(){
 	    //WE WILL SPAWN MULTIPLE THREADS TO GET OUR PICTURES
 	    var threads = [];
 	    for (var i = 0; i < tags.length; i++) {
-	        threads[i] = Thread.run((function*(static_i) {
+	        threads[i] = Thread.run("#"+i, (function*(static_i) {
 	            var url = URL.replace("{TAG}", tags[static_i]);
 	            var data = yield (getJSON(url));		//CALL OUR 'SYNCHRONOUS' FUNCTION
 	            displayImages(data, tags[static_i]);
